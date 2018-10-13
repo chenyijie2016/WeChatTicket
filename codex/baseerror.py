@@ -38,3 +38,8 @@ class ValidateError(BaseError):
 class AuthError(BaseError):
     def __init__(self, msg):
         super(AuthError, self).__init__(4, msg)
+
+
+class DatabaseError(BaseError):
+    def __init__(self, msg):
+        super(DatabaseError, self).__init__(5, msg)
