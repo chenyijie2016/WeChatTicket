@@ -10,7 +10,7 @@ class ActivityList(APIView):
     def get(self):
 
         if not self.request.user.is_authenticated():
-            raise ValidateError("not login")
+            raise ValidateError(self.input)
 
         activity_set = Activity.objects.exclude(status = Activity.STATUS_DELETED)
         activity_list = []
@@ -28,9 +28,9 @@ class ActivityDelete(APIView):
         try:
             activity_to_del = Activity.objects.get(id=self.input['id'])
         except Activity.DoesNotExist:
-            raise DatabaseError("activity with id %d does not exist", self.input['id'])
+            raise DatabaseError(self.input)
         if activity_to_del.status == Activity.STATUS_DELETED:
-            raise LogicError("activity with id %d deleted twice", self.input['id'])
+            raise LogicError(self.input)
         activity_to_del.status = Activity.STATUS_DELETED
         activity_to_del.save()
 
@@ -39,7 +39,7 @@ class ActivityCreate(APIView):
 
     def post(self):
         if not self.request.user.is_authenticated():
-            raise ValidateError("not login")
+            raise ValidateError(self.input)
 
         self.check_input('name', 'key', 'place', 'picUrl', 'startTime',
                          'endTime', 'bookStart', 'bookEnd', 'totalTickets', 'status')
@@ -57,4 +57,4 @@ class ActivityCreate(APIView):
                                     status = self.input['status'],
                                     remain_tickets = self.input['totalTickets'])
         except Exception as e:
-            raise DatabaseError('create admin with name %s failed' % self.input['name'])
+            raise DatabaseError(self.input)

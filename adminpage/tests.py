@@ -31,11 +31,15 @@ published_activity = Activity(id=3, name='published', key='key', place='place',
                               end_time=timezone.now(), book_start=timezone.now(), book_end=timezone.now(),
                               total_tickets=100, status=Activity.STATUS_PUBLISHED, remain_tickets=100)
 
+
 class GetLoginStatusTest(TestCase):
     "test getting login status"
     def setUp(self):
         User.objects.create_superuser(admin_tuple)
         User.objects.create_user(user_tuple)
+
+    def tearDown(self):
+        pass
 
     def test_not_login(self):
         c = Client()
@@ -52,15 +56,15 @@ class GetLoginStatusTest(TestCase):
         response_dict = json.loads(response_str)
         self.assertEqual(response_dict['code'], 0)
 
-    def tearDown(self):
-        pass
-
 
 class LoginTest(TestCase):
     "test logging in"
     def setUp(self):
         User.objects.create_superuser(admin_tuple)
         User.objects.create_user(user_tuple)
+
+    def tearDown(self):
+        pass
 
     def test_admin_login(self):
         c = Client()
@@ -78,16 +82,15 @@ class LoginTest(TestCase):
 
     def test_wrong_password_login(self):
         admin_login = AdminLogin()
+        admin_login.input = {}
         admin_login.input = wrongUserForTest
         self.assertRaises(ValidateError, admin_login.post)
 
     def test_no_password_login(self):
         admin_login = AdminLogin()
+        admin_login.input = {}
         admin_login.input['username'] = userForTest['username']
         self.assertRaises(InputError, admin_login.post)
-
-    def tearDown(self):
-        pass
 
 
 class LogoutTest(TestCase):
@@ -95,6 +98,9 @@ class LogoutTest(TestCase):
     def setUp(self):
         User.objects.create_superuser(admin_tuple)
         User.objects.create_user(user_tuple)
+
+    def tearDown(self):
+        pass
 
     def test_user_logout(self):
         c = Client()
@@ -104,24 +110,54 @@ class LogoutTest(TestCase):
         response_dict = json.loads(response_str)
         self.assertEqual(response_dict['code'], 0)
 
-    def tearDown(self):
-        pass
 
-
-class ActivityListTest(TestCase):
+class ActivityDeleteTest(TestCase):
 
     def setUp(self):
-        deleted_activity_obj = copy.deepcopy(deleted_activity)
-        deleted_activity_obj.save()
-        saved_activity_obj = copy.deepcopy(saved_activity)
-        saved_activity_obj.save()
-        published_activity_obj = copy.deepcopy(published_activity)
-        published_activity_obj.save()
-
-    def test_activity_list(self):
-        pass
+        deleted_activity.save()
+        saved_activity.save()
+        published_activity.save()
 
     def tearDown(self):
         Activity.objects.get(id=1).delete()
         Activity.objects.get(id=2).delete()
         Activity.objects.get(id=3).delete()
+
+    def test_activity_list(self):
+        c = Client()
+        c.post('/api/a/login', admin_json)
+        response = c.post('/api/a/activity/list')
+        response_str = response.content.decode('utf-8')
+        response_dict = json.loads(response_str)
+        response_list = response_dict['data']
+        self.assertEqual(len(response_list), 2)
+
+    def test_activity_delete_success(self):
+        c = Client()
+        c.post('/api/a/login', admin_json)
+        response = c.post('/api/a/activity/delete', {"id": "2"})
+        response_str = response.content.decode('utf-8')
+        response_dict = json.loads(response_str)
+        self.assertEqual(response_dict['code'], 0)
+
+    def test_activity_delete_again(self):
+        activity_delete = ActivityDelete()
+        activity_delete.input = {}
+        activity_delete.input['id'] = 1
+        self.assertRaises(LogicError, activity_delete.post)
+
+
+class ActivityCreateTest(TestCase):
+    def setUp(self):
+        pass
+
+    def tearDown(self):
+        pass
+
+    def test_activity_create(self):
+        c = Client()
+        c.post('/api/a/login', admin_json)
+        response = c.post('/api/a/activity/create', json.dumps(published_activity))
+        response_str = response.content.decode('utf-8')
+        response_dict = json.loads(response_str)
+        self.assertEqual(response_dict['code'], 0)

@@ -11,16 +11,16 @@ class AdminLogin(APIView):
         password = self.input['password']
         user = authenticate(username=username, password=password)
         if user is None:
-            raise ValidateError("%s does not exist or password incorrect" % username)
+            raise ValidateError(self.input)
         else:
             try:
                 login(self.request, user)
             except Exception as e:
-                raise AuthError("admin %s login failed" % username)
+                raise AuthError(self.input)
 
     def get(self):
         if not self.request.user.is_authenticated():
-            raise ValidateError("login failed")
+            raise ValidateError(self.input)
 
     def post(self):
         self.check_input('username', 'password')
@@ -31,9 +31,9 @@ class AdminLogout(APIView):
 
     def post(self):
         if not self.request.user:
-            raise ValidateError("admin not exist")
+            raise ValidateError(self.input)
         else:
             try:
                 logout(self.request)
             except Exception as e:
-                raise AuthError("admin logout failed")
+                raise AuthError(self.input)
