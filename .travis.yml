@@ -9,7 +9,6 @@ before_install:
     - mv configs.example.json configs.json
 # command to install dependencies
 install:
-    - sudo apt-get install python3-mysqldb
     - pip install -r requirements.txt
 
 script:
