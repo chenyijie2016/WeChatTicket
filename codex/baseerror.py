@@ -43,3 +43,11 @@ class AuthError(BaseError):
 class DatabaseError(BaseError):
     def __init__(self, msg):
         super(DatabaseError, self).__init__(5, msg)
+
+class FileError(BaseError):
+    def __init__(self, msg):
+        super(FileError, self).__init__(6, msg)
+
+class TicketError(BaseError):
+    def __init__(self, msg):
+        super(TicketError, self).__init__(7, msg)
