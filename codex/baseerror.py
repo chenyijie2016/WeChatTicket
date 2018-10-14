@@ -48,6 +48,6 @@ class FileError(BaseError):
     def __init__(self, msg):
         super(FileError, self).__init__(6, msg)
 
-class TicketError(BaseError):
+class MenuError(BaseError):
     def __init__(self, msg):
-        super(TicketError, self).__init__(7, msg)
+        super(MenuError, self).__init__(7, msg)

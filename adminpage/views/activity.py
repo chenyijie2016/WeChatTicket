@@ -3,6 +3,7 @@ from codex.baseview import APIView
 
 from wechat.models import Activity
 from wechat.models import Ticket
+from wechat.views import CustomWeChatView
 from adminpage.serializers import activitySerializer
 from django.conf import settings
 
@@ -72,12 +73,14 @@ class ImageUpload(APIView):
 
         img = self.input['image']
         img_path = os.path.join(settings.IMAGE_ROOT, img.name)
+
         try:
             with open(img_path, 'wb') as imgp:
                 for info in img.chunks():
                     imgp.write(info)
-            img_url = 'https://' + '635149.iterator-traits.com' + '/img/' + img.name
+            img_url = 'https://' + settings.SITE_DOMAIN + '/img/' + img.name
             return img_url
+
         except Exception as e:
             raise FileError("upload file with name %s failed" % img.name)
 
@@ -87,6 +90,7 @@ class ActivityDetail(APIView):
     def get(self):
         if not self.request.user.is_authenticated():
             raise ValidateError("not login")
+
         try:
             activity = Activity.objects.get(id = self.input['id'])
             activity_detail = {}
@@ -101,14 +105,14 @@ class ActivityDetail(APIView):
             activity_detail['totalTickets'] = activity.total_tickets
             activity_detail['picUrl'] = activity.pic_url
             activity_detail['bookedTickets'] = activity.total_tickets - activity.remain_tickets
-            activity_detail['usedTickets'] = Ticket.objects.count(status = Ticket.STATUS_USED)
+            activity_detail['usedTickets'] = Ticket.objects.count(activity = activity, status = Ticket.STATUS_USED)
             activity_detail['currentTime'] = time.time()
             activity_detail['status'] = activity.status
 
             return activity_detail
 
         except Exception as e:
-            raise DatabaseError("get detail with id %d failed" % self.input['id'])
+            raise DatabaseError("get detail from id %d failed" % self.input['id'])
 
     def post(self):
         if not self.request.user.is_authenticated():
@@ -124,6 +128,7 @@ class ActivityDetail(APIView):
 
             activity.description = self.input['description']
             activity.pic_url = self.input['picUrl']
+
             if activity_status == Activity.STATUS_SAVED:
                 activity.name = self.input['name']
                 activity.place = self.input['place']
@@ -140,6 +145,9 @@ class ActivityDetail(APIView):
             if current_time < activity.end_time:
                 activity.start_time = self.input['startTime']
                 activity.end_time = self.input['endTime']
+
+            activity.save()
+
         except Exception as e:
             raise DatabaseError('change detailed with id %d failed' % self.input['id'])
 
@@ -149,34 +157,79 @@ class ActivityMenu(APIView):
     def get(self):
 
         if not self.request.user.is_authenticated():
-            raise LogicError("not login")
+            raise ValidateError("not login")
+        try:
+            current_menu = CustomWeChatView.lib.get_wechat_menu()
+            existed_button = list()
+            for btn in current_menu:
+                if btn['name'] == '抢票':
+                    existed_button += btn.get('sub_button', list())
+            activity_ids = list()
+            for btn in existed_button:
+                if 'key' in btn:
+                    activity_id = btn['key']
+                    if activity_id.startwith(CustomWeChatView.event_keys['book_header']):
+                        activity_id = activity_id[len(CustomWeChatView.event_keys['book_header'])]
+                    if activity_id and activity_id.isdigit():
+                        activity_ids.append(int(activity_id))
 
-        activity_set = Activity.objects.filter(status = Activity.STATUS_PUBLISHED)
-        activity_list = []
-        for activity in activity_set:
-            menu_item = {'id': activity.id, 'name': activity.name, 'menuIndex': activity.indexes}
-            activity_list.append(menu_item)
-        return activity_list
+            activitys = []
+            activity_in = Activity.objects.filter(id__in = activity_ids)
+            index = 1
+            for activity in activity_in:
+                activitys.append({'id': activity.id, 'name': activity.name, 'menuIndex': index})
+                index += 1
+            activity_nin = Activity.objects.exclude(id_in = activity_ids, status = Activity.STATUS_SAVED)
+            for activity in activity_nin:
+                activitys.append({'id': activity.id, 'name': activity.name, 'menuIndex': 0})
+            return activitys
+        except Exception as e:
+            raise MenuError("get menu failed")
+
 
     def post(self):
-        pass
+
+        if not self.request.user.is_authenticated():
+            raise ValidateError("not login")
+
+        try:
+            activity_id_list = self.input
+            activity_list = []
+            for id in activity_id_list:
+                activity = Activity.objects.get(id=id)
+                activity_list.append(activity)
+            CustomWeChatView.update_menu(activity_list)
+
+        except Exception as e:
+            raise MenuError("update menu failed")
 
 class ActivityCheckin(APIView):
     def post(self):
         if not self.request.user.is_authenticated():
             raise ValidateError("not login")
         self.check_input('actId')
+
         try:
             activity = Activity.objects.get(id = self.input['id'])
             if 'ticket' in self.input:
                 ticket = Ticket.objects.get(unique_id = self.input['ticket'])
             else:
                 ticket = Ticket.objects.get(student_id = self.input['studentId'])
+
         except Exception as e:
             raise DatabaseError("get activity or ticket failed")
 
-        if ticket.activity.id == activity.id:
-            data = {'ticket': ticket.unique_id, 'studentId': ticket.student_id}
-            return data
-        else:
-            raise TicketError("check ticket with id %d failed" % ticket.unique_id)
+        if ticket.status == Ticket.STATUS_USED:
+            raise LogicError("ticket has been used")
+
+        if ticket.status == Ticket.STATUS_CANCELLED:
+            raise LogicError("ticket has been canceled")
+
+        if ticket.activity.id != activity.id:
+            raise LogicError("ticket dosn't match activity")
+
+        ticket.status = Ticket.STATUS_USED
+        ticket.save()
+
+        data = {'ticket': ticket.unique_id, 'studentId': ticket.student_id}
+        return data
