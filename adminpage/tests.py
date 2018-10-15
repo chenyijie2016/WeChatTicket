@@ -11,9 +11,6 @@ from adminpage.views.activity import *
 adminForTest = {"username": "admin", "email": "admin@test.com", "password": "admin_psw"}
 userForTest = {"username": "user", "email": "user@test.com", "password": "user_psw"}
 wrongUserForTest = {"username": "user", "email": "user@test.com", "password": "user_wrong_psw"}
-admin_tuple = (adminForTest['username'], adminForTest['email'], adminForTest['password'])
-user_tuple = (userForTest['username'], userForTest['email'], userForTest['password'])
-
 
 deleted_activity = Activity(id=1, name='deleted', key='key', place='place',
                             description='description', start_time=timezone.now(), pic_url="pic_url",
@@ -30,12 +27,21 @@ published_activity = Activity(id=3, name='published', key='key', place='place',
                               end_time=timezone.now(), book_start=timezone.now(), book_end=timezone.now(),
                               total_tickets=100, status=Activity.STATUS_PUBLISHED, remain_tickets=100)
 
+published_activity_dic = {"id": 3, "name": 'published', "key":'key', "place":'place',
+                        "description":'description', "startTime":timezone.now(), "picUrl":"pic_url",
+                         "endTime": timezone.now(), "bookStart":timezone.now(), "bookEnd":timezone.now(),
+                          "totalTickets":100, "status":Activity.STATUS_PUBLISHED, "remainTickets":100}
+
 
 class GetLoginStatusTest(TestCase):
     "test getting login status"
     def setUp(self):
-        User.objects.create_superuser(admin_tuple)
-        User.objects.create_user(user_tuple)
+        User.objects.create_superuser(adminForTest['username'],
+                                      adminForTest['email'],
+                                      adminForTest['password'])
+        User.objects.create_user(userForTest['username'],
+                                 userForTest['email'],
+                                 userForTest['password'])
 
     def tearDown(self):
         pass
@@ -45,7 +51,7 @@ class GetLoginStatusTest(TestCase):
         response = c.get('/api/a/login')
         response_str = response.content.decode('utf-8')
         response_dict = json.loads(response_str)
-        self.assertEqual(response_dict['code'], 1)
+        self.assertEqual(response_dict['code'], 3)
 
     def test_already_login(self):
         c = Client()
@@ -59,8 +65,12 @@ class GetLoginStatusTest(TestCase):
 class LoginTest(TestCase):
     "test logging in"
     def setUp(self):
-        User.objects.create_superuser(admin_tuple)
-        User.objects.create_user(user_tuple)
+        User.objects.create_superuser(adminForTest['username'],
+                                      adminForTest['email'],
+                                      adminForTest['password'])
+        User.objects.create_user(userForTest['username'],
+                                 userForTest['email'],
+                                 userForTest['password'])
 
     def tearDown(self):
         pass
@@ -95,8 +105,12 @@ class LoginTest(TestCase):
 class LogoutTest(TestCase):
     "test logging out"
     def setUp(self):
-        User.objects.create_superuser(admin_tuple)
-        User.objects.create_user(user_tuple)
+        User.objects.create_superuser(adminForTest['username'],
+                                      adminForTest['email'],
+                                      adminForTest['password'])
+        User.objects.create_user(userForTest['username'],
+                                 userForTest['email'],
+                                 userForTest['password'])
 
     def tearDown(self):
         pass
@@ -104,7 +118,7 @@ class LogoutTest(TestCase):
     def test_user_logout(self):
         c = Client()
         c.post('/api/a/login', userForTest)
-        response = c.post('/api/a/logout')
+        response = c.post('/api/a/logout', userForTest)
         response_str = response.content.decode('utf-8')
         response_dict = json.loads(response_str)
         self.assertEqual(response_dict['code'], 0)
@@ -113,6 +127,12 @@ class LogoutTest(TestCase):
 class ActivityDeleteTest(TestCase):
 
     def setUp(self):
+        User.objects.create_superuser(adminForTest['username'],
+                                      adminForTest['email'],
+                                      adminForTest['password'])
+        User.objects.create_user(userForTest['username'],
+                                 userForTest['email'],
+                                 userForTest['password'])
         deleted_activity.save()
         saved_activity.save()
         published_activity.save()
@@ -125,7 +145,7 @@ class ActivityDeleteTest(TestCase):
     def test_activity_list(self):
         c = Client()
         c.post('/api/a/login', adminForTest)
-        response = c.post('/api/a/activity/list')
+        response = c.get('/api/a/activity/list')
         response_str = response.content.decode('utf-8')
         response_dict = json.loads(response_str)
         response_list = response_dict['data']
@@ -148,7 +168,12 @@ class ActivityDeleteTest(TestCase):
 
 class ActivityCreateTest(TestCase):
     def setUp(self):
-        pass
+        User.objects.create_superuser(adminForTest['username'],
+                                      adminForTest['email'],
+                                      adminForTest['password'])
+        User.objects.create_user(userForTest['username'],
+                                 userForTest['email'],
+                                 userForTest['password'])
 
     def tearDown(self):
         pass
@@ -156,7 +181,7 @@ class ActivityCreateTest(TestCase):
     def test_activity_create(self):
         c = Client()
         c.post('/api/a/login', adminForTest)
-        response = c.post('/api/a/activity/create', published_activity)
+        response = c.post('/api/a/activity/create', published_activity_dic)
         response_str = response.content.decode('utf-8')
         response_dict = json.loads(response_str)
         self.assertEqual(response_dict['code'], 0)
