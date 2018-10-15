@@ -156,7 +156,7 @@ class ActivityCreateTest(TestCase):
     def test_activity_create(self):
         c = Client()
         c.post('/api/a/login', adminForTest)
-        response = c.post('/api/a/activity/create', json.dumps(published_activity))
+        response = c.post('/api/a/activity/create', published_activity)
         response_str = response.content.decode('utf-8')
         response_dict = json.loads(response_str)
         self.assertEqual(response_dict['code'], 0)
