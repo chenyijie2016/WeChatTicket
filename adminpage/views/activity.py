@@ -50,6 +50,7 @@ class ActivityCreate(APIView):
         self.check_input('name', 'key', 'place', 'picUrl', 'startTime',
                          'endTime', 'bookStart', 'bookEnd', 'totalTickets', 'status')
         try:
+            print(self.input['bookStart'])
             Activity.objects.create(name = self.input['name'],
                                     key = self.input['key'],
                                     place = self.input['place'],
@@ -71,14 +72,14 @@ class ImageUpload(APIView):
         if not self.request.user.is_authenticated():
             raise ValidateError("not login")
 
-        img = self.input['image']
+        img = self.input['image'][0]
         img_path = os.path.join(settings.IMAGE_ROOT, img.name)
 
         try:
             with open(img_path, 'wb') as imgp:
                 for info in img.chunks():
                     imgp.write(info)
-            img_url = 'https://' + settings.SITE_DOMAIN + '/img/' + img.name
+            img_url = settings.SITE_DOMAIN + '/img/' + img.name
             return img_url
 
         except Exception as e:
@@ -86,6 +87,8 @@ class ImageUpload(APIView):
 
 
 class ActivityDetail(APIView):
+
+
 
     def get(self):
         if not self.request.user.is_authenticated():
@@ -105,20 +108,20 @@ class ActivityDetail(APIView):
             activity_detail['totalTickets'] = activity.total_tickets
             activity_detail['picUrl'] = activity.pic_url
             activity_detail['bookedTickets'] = activity.total_tickets - activity.remain_tickets
-            activity_detail['usedTickets'] = Ticket.objects.count(activity = activity, status = Ticket.STATUS_USED)
+            activity_detail['usedTickets'] = Ticket.objects.filter(activity=activity, status=Ticket.STATUS_USED).count()
             activity_detail['currentTime'] = time.time()
             activity_detail['status'] = activity.status
 
             return activity_detail
 
         except Exception as e:
-            raise DatabaseError("get detail from id %d failed" % self.input['id'])
+            raise DatabaseError("get detail from id %d failed" % int(self.input['id']))
 
     def post(self):
         if not self.request.user.is_authenticated():
             raise ValidateError("not login")
 
-        self.check_input('id', 'name', 'description', 'picUrl', 'startTime', 'endTime', 'bookStart', 'bookend',
+        self.check_input('id', 'name', 'description', 'picUrl', 'startTime', 'endTime', 'bookStart', 'bookEnd',
                          'totalTickets', 'status')
 
         try:
@@ -134,15 +137,16 @@ class ActivityDetail(APIView):
                 activity.place = self.input['place']
                 activity.book_start = self.input['bookStart']
                 activity.status = self.input['status']
+                activity.save()
+                activity = Activity.objects.get(id=self.input['id'])
 
-            if current_time < activity.book_start:
+            if current_time < activity.book_start.timestamp():
                 activity.total_tickets = self.input['totalTickets']
 
-            if current_time < activity.start_time:
+            if current_time < activity.start_time.timestamp():
                 activity.book_end = self.input['bookEnd']
 
-
-            if current_time < activity.end_time:
+            if current_time < activity.end_time.timestamp():
                 activity.start_time = self.input['startTime']
                 activity.end_time = self.input['endTime']
 
@@ -150,7 +154,6 @@ class ActivityDetail(APIView):
 
         except Exception as e:
             raise DatabaseError('change detailed with id %d failed' % self.input['id'])
-
 
 
 class ActivityMenu(APIView):
@@ -186,7 +189,6 @@ class ActivityMenu(APIView):
         except Exception as e:
             raise MenuError("get menu failed")
 
-
     def post(self):
 
         if not self.request.user.is_authenticated():
@@ -203,14 +205,16 @@ class ActivityMenu(APIView):
         except Exception as e:
             raise MenuError("update menu failed")
 
+
 class ActivityCheckin(APIView):
     def post(self):
         if not self.request.user.is_authenticated():
             raise ValidateError("not login")
         self.check_input('actId')
+        current_time = time.time()
 
         try:
-            activity = Activity.objects.get(id = self.input['id'])
+            activity = Activity.objects.get(id = self.input['actId'])
             if 'ticket' in self.input:
                 ticket = Ticket.objects.get(unique_id = self.input['ticket'])
             else:
@@ -218,6 +222,9 @@ class ActivityCheckin(APIView):
 
         except Exception as e:
             raise DatabaseError("get activity or ticket failed")
+
+        if current_time > activity.end_time.timestamp():
+            raise LogicError("activity has ended")
 
         if ticket.status == Ticket.STATUS_USED:
             raise LogicError("ticket has been used")
