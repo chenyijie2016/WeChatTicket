@@ -38,7 +38,7 @@ WECHAT_TOKEN = CONFIGS['WECHAT_TOKEN']
 WECHAT_APPID = CONFIGS['WECHAT_APPID']
 WECHAT_SECRET = CONFIGS['WECHAT_SECRET']
 
-ALLOWED_HOSTS = ['635149.iterator-traits.com']
+ALLOWED_HOSTS = ['635149.iterator-traits.com','ticket.wecode-onlinejudge.xyz']
 
 
 # Application definition
