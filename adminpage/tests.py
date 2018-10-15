@@ -13,8 +13,7 @@ userForTest = {"username": "user", "email": "user@test.com", "password": "user_p
 wrongUserForTest = {"username": "user", "email": "user@test.com", "password": "user_wrong_psw"}
 admin_tuple = (adminForTest['username'], adminForTest['email'], adminForTest['password'])
 user_tuple = (userForTest['username'], userForTest['email'], userForTest['password'])
-admin_json = json.dumps(adminForTest)
-user_json = json.dumps(userForTest)
+
 
 deleted_activity = Activity(id=1, name='deleted', key='key', place='place',
                             description='description', start_time=timezone.now(), pic_url="pic_url",
@@ -50,7 +49,7 @@ class GetLoginStatusTest(TestCase):
 
     def test_already_login(self):
         c = Client()
-        c.post('/api/a/login', user_json)
+        c.post('/api/a/login', userForTest)
         response = c.get('/api/a/login')
         response_str = response.content.decode('utf-8')
         response_dict = json.loads(response_str)
@@ -68,14 +67,14 @@ class LoginTest(TestCase):
 
     def test_admin_login(self):
         c = Client()
-        response = c.post('/api/a/login', admin_json)
+        response = c.post('/api/a/login', adminForTest)
         response_str = response.content.decode('utf-8')
         response_dict = json.loads(response_str)
         self.assertEqual(response_dict['code'], 0)
 
     def test_user_login(self):
         c = Client()
-        response = c.post('/api/a/login', user_json)
+        response = c.post('/api/a/login', userForTest)
         response_str = response.content.decode('utf-8')
         response_dict = json.loads(response_str)
         self.assertEqual(response_dict['code'], 0)
@@ -104,7 +103,7 @@ class LogoutTest(TestCase):
 
     def test_user_logout(self):
         c = Client()
-        c.post('/api/a/login', user_json)
+        c.post('/api/a/login', userForTest)
         response = c.post('/api/a/logout')
         response_str = response.content.decode('utf-8')
         response_dict = json.loads(response_str)
@@ -125,7 +124,7 @@ class ActivityDeleteTest(TestCase):
 
     def test_activity_list(self):
         c = Client()
-        c.post('/api/a/login', admin_json)
+        c.post('/api/a/login', adminForTest)
         response = c.post('/api/a/activity/list')
         response_str = response.content.decode('utf-8')
         response_dict = json.loads(response_str)
@@ -134,7 +133,7 @@ class ActivityDeleteTest(TestCase):
 
     def test_activity_delete_success(self):
         c = Client()
-        c.post('/api/a/login', admin_json)
+        c.post('/api/a/login', adminForTest)
         response = c.post('/api/a/activity/delete', {"id": "2"})
         response_str = response.content.decode('utf-8')
         response_dict = json.loads(response_str)
@@ -156,7 +155,7 @@ class ActivityCreateTest(TestCase):
 
     def test_activity_create(self):
         c = Client()
-        c.post('/api/a/login', admin_json)
+        c.post('/api/a/login', adminForTest)
         response = c.post('/api/a/activity/create', json.dumps(published_activity))
         response_str = response.content.decode('utf-8')
         response_dict = json.loads(response_str)
