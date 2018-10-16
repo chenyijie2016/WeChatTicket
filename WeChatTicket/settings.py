@@ -112,7 +112,6 @@ DATABASES = {
         'HOST': CONFIGS['DB_HOST'],
         'PORT': CONFIGS['DB_PORT'],
     }
-
 }
 
 
@@ -147,6 +146,7 @@ USE_I18N = True
 USE_L10N = True
 
 USE_TZ = True
+TIME_ZONE = 'Asia/Shanghai'
 
 
 # Static files (CSS, JavaScript, Images)
