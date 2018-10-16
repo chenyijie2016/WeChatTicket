@@ -5,7 +5,8 @@ from codex.baseerror import LogicError
 
 class User(models.Model):
     open_id = models.CharField(max_length=64, unique=True, db_index=True)
-    student_id = models.CharField(max_length=32, unique=True, db_index=True)
+    student_id = models.CharField(max_length=32, db_index=True)
+    # Cancel unique to fix bug when two default student with student_id=''
 
     @classmethod
     def get_by_openid(cls, openid):

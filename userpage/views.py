@@ -56,7 +56,9 @@ class UserBind(APIView):
         # Here we just think that the user-input is right
         #  if the input is not wrong, accept it.
         if False:
-            raise ValidateError('User ID or password incorrect!')
+            raise ValidateError('Student ID or password incorrect!')
+        if len(User.objects.filter(student_id=self.input['student_id'])) > 0:
+            raise ValidateError('A student with the same Student ID exists! Please contact with admin!')
 
     def get(self):
         self.check_input('openid')
