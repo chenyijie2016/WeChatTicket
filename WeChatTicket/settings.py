@@ -112,6 +112,7 @@ DATABASES = {
         'HOST': CONFIGS['DB_HOST'],
         'PORT': CONFIGS['DB_PORT'],
     }
+
 }
 
 
