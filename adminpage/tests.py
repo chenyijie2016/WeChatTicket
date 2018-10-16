@@ -745,7 +745,7 @@ class TicketCheckInTest(TestCase):
         response = c.post('/api/a/activity/checkin', {'actId': self.EndedID, 'ticket': 'ended_unique_id'})
         response_str = response.content.decode('utf-8')
         response_dict = json.loads(response_str)
-        self.assertEqual(response_dict['code'], 0)
+        self.assertEqual(response_dict['code'], 2)
 
     def test_checkin_7(self):
         c = Client()
@@ -824,4 +824,4 @@ class TicketCheckInTest(TestCase):
         response = c.post('/api/a/activity/checkin', {'actId': self.ValidID, 'studentId': 'valid_student_id'})
         response_str = response.content.decode('utf-8')
         response_dict = json.loads(response_str)
-        self.assertEqual(response_dict['code'], 0)
+        self.assertEqual(response_dict['code'], 3)
