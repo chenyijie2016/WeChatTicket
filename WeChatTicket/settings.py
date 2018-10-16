@@ -38,7 +38,7 @@ WECHAT_TOKEN = CONFIGS['WECHAT_TOKEN']
 WECHAT_APPID = CONFIGS['WECHAT_APPID']
 WECHAT_SECRET = CONFIGS['WECHAT_SECRET']
 
-ALLOWED_HOSTS = ['635149.iterator-traits.com','ticket.wecode-onlinejudge.xyz']
+ALLOWED_HOSTS = ['635149.iterator-traits.com', 'ticket.wecode-onlinejudge.xyz', '140.143.13.231', '159.65.105.211']
 
 
 # Application definition
@@ -49,7 +49,7 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     # 'django.contrib.messages',
     # 'django.contrib.staticfiles',
-    'django.contrib.admin',
+    # 'django.contrib.admin',
 
     'wechat',
     'adminpage',

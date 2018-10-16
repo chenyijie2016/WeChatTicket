@@ -89,8 +89,7 @@ class TicketDetail(APIView):
     def get(self):
         self.check_input('openid', 'ticket')
         got_ticket = Ticket.get_student_ticket(self.input['openid'], self.input['ticket'])
-        got_activity = Activity.get_by_id(got_ticket.activity_id)
         return prepare_data_reply(
             ['name', 'place', 'key', 'uniqueId', 'startTime', 'endTime', 'status'],
-            got_ticket, got_activity, name='activityName', key='activityKey'
+            got_ticket, got_ticket.activity, name='activityName', key='activityKey'
         )
