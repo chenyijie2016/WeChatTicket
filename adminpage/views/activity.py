@@ -216,13 +216,12 @@ class ActivityCheckin(APIView):
             raise ValidateError("not login")
         self.check_input('actId')
         current_time = time.time()
-
         try:
-            activity = Activity.objects.get(id = self.input['actId'])
+            activity = Activity.objects.get(id=self.input['actId'])
             if 'ticket' in self.input:
-                ticket = Ticket.objects.get(unique_id = self.input['ticket'])
+                ticket = Ticket.objects.get(unique_id=self.input['ticket'])
             else:
-                ticket = Ticket.objects.get(student_id = self.input['studentId'])
+                ticket = Ticket.objects.get(student_id=self.input['studentId'])
 
         except Exception as e:
             raise DatabaseError("get activity or ticket failed")

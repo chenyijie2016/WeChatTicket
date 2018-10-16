@@ -601,20 +601,20 @@ class ActivityMenuTest(TestCase):
 
 
 class TicketCheckInTest(TestCase):
-    # TODO:
-    # 1.提交ticket_id并检票成功
-    # 2.提交ticket_id并验票失败（票不存在）
-    # 3.提交ticket_id并验票失败（电子票已取消）
-    # 4.提交ticket_id并验票失败（电子票已使用）
-    # 5.提交ticket_id并检票失败（活动验证失败）
-    # 6.提交ticket_id并检票失败（活动已结束）
-    # 7.提交student_id并检票成功
-    # 8.提交student_id并验票失败（票不存在）
-    # 9.提交student_id并验票失败（电子票已取消）
-    # 10.提交student_id并验票失败（电子票已使用）
-    # 11.提交student_id并检票失败（活动验证失败）
-    # 12.提交student_id并检票失败（活动已结束）
-    # 13.未登录
+#     # TODO:
+#     # 1.提交ticket_id并检票成功
+#     # 2.提交ticket_id并验票失败（票不存在）
+#     # 3.提交ticket_id并验票失败（电子票已取消）
+#     # 4.提交ticket_id并验票失败（电子票已使用）
+#     # 5.提交ticket_id并检票失败（活动验证失败）
+#     # 6.提交ticket_id并检票失败（活动已结束）
+#     # 7.提交student_id并检票成功
+#     # 8.提交student_id并验票失败（票不存在）
+#     # 9.提交student_id并验票失败（电子票已取消）
+#     # 10.提交student_id并验票失败（电子票已使用）
+#     # 11.提交student_id并检票失败（活动验证失败）
+#     # 12.提交student_id并检票失败（活动已结束）
+#     # 13.未登录
 
     ValidID = 1
     EndedID = 2
@@ -628,20 +628,24 @@ class TicketCheckInTest(TestCase):
                                  userForTest['email'],
                                  userForTest['password'])
 
+        current_time = timezone.now()
+        delta_1 = timezone.timedelta(hours=1)
+        delta_2 = timezone.timedelta(days=1)
+
         valid_activity = Activity(id=self.ValidID, name='published', key='key', place='place',
                                   description='description',
-                                  start_time=timezone.make_aware(datetime(2018, 10, 15, 18, 0, 0, 0)),
+                                  start_time=current_time-delta_1,
                                   pic_url="pic_url",
-                                  end_time=timezone.make_aware(datetime(2018, 10, 15, 23, 0, 0, 0)),
+                                  end_time=current_time+delta_1,
                                   book_start=timezone.now(),
                                   book_end=timezone.now(),
                                   total_tickets=100, status=Activity.STATUS_PUBLISHED, remain_tickets=100)
 
         ended_activity = Activity(id=self.EndedID, name='published', key='key', place='place',
                                   description='description',
-                                  start_time=timezone.make_aware(datetime(2018, 10, 15, 18, 0, 0, 0)),
+                                  start_time=current_time-delta_2,
                                   pic_url="pic_url",
-                                  end_time=timezone.make_aware(datetime(2018, 10, 15, 19, 0, 0, 0)),
+                                  end_time=current_time-delta_1,
                                   book_start=timezone.now(), book_end=timezone.now(),
                                   total_tickets=100, status=Activity.STATUS_PUBLISHED, remain_tickets=100)
 
