@@ -353,6 +353,67 @@ class ActivityDetailTest(TestCase):
         self.assertNotEqual(activity.status, new_status)
 
 
+class ActivityMenuTest(TestCase):
+    # TODO:
+    # 1.上传菜单按钮
+    # 2.上传菜单按钮后获取菜单按钮
+
+    def setUp(self):
+        User.objects.create_user(userForTest['username'],
+                                 userForTest['email'],
+                                 userForTest['password'])
+
+        current_time = timezone.now()
+        delta_1 = timezone.timedelta(hours=1)
+        delta_2 = timezone.timedelta(days=1)
+
+        for i in range(1, 11):
+            valid_activity = Activity(id=i, name='published' + str(i), key='key', place='place',
+                                      description='description',
+                                      start_time=current_time + delta_2,
+                                      pic_url="pic_url",
+                                      end_time=current_time + delta_2 + delta_1,
+                                      book_start=current_time - delta_1,
+                                      book_end=current_time + delta_1,
+                                      total_tickets=100, status=Activity.STATUS_PUBLISHED, remain_tickets=100)
+            valid_activity.save()
+
+    def test_menu_post(self):
+        c = Client()
+        response = c.post('/api/a/login', userForTest)
+        response_str = response.content.decode('utf-8')
+        response_dict = json.loads(response_str)
+        self.assertEqual(response_dict['code'], 0)
+
+        act_ids = {}
+        acts = Activity.objects.all()
+        for act in acts:
+            act_ids[str(act.id)] = act.id
+        response = c.post('/api/a/activity/menu', act_ids)
+        response_str = response.content.decode('utf-8')
+        response_dict = json.loads(response_str)
+        self.assertEqual(response_dict['code'], 0)
+
+    def test_menu_get(self):
+        time.sleep(2)
+
+        c = Client()
+        response = c.post('/api/a/login', userForTest)
+        response_str = response.content.decode('utf-8')
+        response_dict = json.loads(response_str)
+        self.assertEqual(response_dict['code'], 0)
+
+        response = c.get('/api/a/activity/menu')
+        response_str = response.content.decode('utf-8')
+        response_dict = json.loads(response_str)
+        self.assertEqual(response_dict['code'], 0)
+        for i in range(5):
+            self.assertEqual(response_dict['data'][i]['menuIndex'], i + 1)
+        for i in range(5, 10):
+            self.assertEqual(response_dict['data'][i]['menuIndex'], 0)
+
+
+
 class TicketCheckInTest(TestCase):
     # TODO:
     # 1.提交ticket_id并检票成功

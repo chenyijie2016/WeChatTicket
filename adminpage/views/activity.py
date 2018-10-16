@@ -6,6 +6,7 @@ from wechat.models import Ticket
 from wechat.views import CustomWeChatView
 from adminpage.serializers import activitySerializer
 from django.conf import settings
+from django.utils import timezone
 
 import os
 import time
@@ -171,18 +172,19 @@ class ActivityMenu(APIView):
             for btn in existed_button:
                 if 'key' in btn:
                     activity_id = btn['key']
-                    if activity_id.startwith(CustomWeChatView.event_keys['book_header']):
+                    if activity_id.startswith(CustomWeChatView.event_keys['book_header']):
                         activity_id = activity_id[len(CustomWeChatView.event_keys['book_header'])]
                     if activity_id and activity_id.isdigit():
                         activity_ids.append(int(activity_id))
-
             activitys = []
-            activity_in = Activity.objects.filter(id__in = activity_ids)
+            activity_in = Activity.objects.filter(id__in = activity_ids, book_start__lt=timezone.now()
+                                                  , book_end__gt=timezone.now(), status=Activity.STATUS_PUBLISHED)
             index = 1
             for activity in activity_in:
                 activitys.append({'id': activity.id, 'name': activity.name, 'menuIndex': index})
                 index += 1
-            activity_nin = Activity.objects.exclude(id_in = activity_ids, status = Activity.STATUS_SAVED)
+            activity_nin = Activity.objects.exclude(id__in = activity_ids, status = Activity.STATUS_SAVED
+                                                    , book_start__gt=timezone.now(), book_end__lt=timezone.now())
             for activity in activity_nin:
                 activitys.append({'id': activity.id, 'name': activity.name, 'menuIndex': 0})
             return activitys
