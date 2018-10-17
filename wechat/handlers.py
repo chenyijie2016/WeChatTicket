@@ -109,14 +109,22 @@ class BookHandler(WeChatHandler):
         activity_key = self.input['Content'][3:]
         if self.user.student_id:
             activities = Activity.objects.filter(key=activity_key)
-            if len(activities) == 1 and activities[0].remain_tickets > 0:
-                activities[0].remain_tickets -= 1
-                Ticket.objects.create(unique_id=str(uuid.uuid4()),
-                                      student_id=self.user.student_id,
-                                      activity=activities[0],
-                                      status=Ticket.STATUS_VALID)
-                return self.reply_text('抢票成功')
-            return self.reply_text('抢票失败')
+            if len(activities) == 1:
+                if activities[0].remain_tickets > 0:
+                    my_tickets = Ticket.objects.filter(activity=activities[0],
+                                                       student_id=self.user.student_id,
+                                                       status=Ticket.STATUS_VALID)
+                    if len(my_tickets) == 0:
+                        activities[0].remain_tickets -= 1
+                        activities[0].save()
+                        Ticket.objects.create(unique_id=str(uuid.uuid4()),
+                                              student_id=self.user.student_id,
+                                              activity=activities[0],
+                                              status=Ticket.STATUS_VALID)
+                        return self.reply_text('抢票成功')
+                    return self.reply_text('已经抢过票了')
+                return self.reply_text('抢票失败')
+            return self.reply_text('活动查询出错')
         return self.reply_text(self.get_message('bind_account'))
 
 
@@ -129,18 +137,20 @@ class RefundHandler(WeChatHandler):
         activity_key = self.input['Content'][3:]
         if self.user.student_id:
             activities = Activity.objects.filter(key=activity_key)
-            if len(activities) == 1 and activities[0].remain_tickets > 0:
-                activities[0].remain_tickets -= 1
+            if len(activities) == 1:
                 tickets = Ticket.objects.filter(activity=activities[0],
-                                          student_id=self.user.student_id,
-                                          status=Ticket.STATUS_VALID)
+                                                student_id=self.user.student_id,
+                                                status=Ticket.STATUS_VALID)
                 if len(tickets) == 1:
                     tickets[0].status = Ticket.STATUS_CANCELLED
                     tickets[0].activity.remain_tickets += 1
                     tickets[0].activity.save()
                     tickets[0].save()
                     return self.reply_text('退票成功')
-            return self.reply_text('不存在未使用的票')
+                elif len(tickets) == 0:
+                    return self.reply_text('不存在未使用的票')
+                return self.reply_text('查票出错')
+            return self.reply_text('活动查询出错')
         return self.reply_text(self.get_message('bind_account'))
 
 
@@ -153,8 +163,7 @@ class GetSingleTicketHandler(WeChatHandler):
         activity_key = self.input['Content'][3:]
         if self.user.student_id:
             activities = Activity.objects.filter(key=activity_key)
-            if len(activities) == 1 and activities[0].remain_tickets > 0:
-                activities[0].remain_tickets -= 1
+            if len(activities) == 1:
                 tickets = Ticket.objects.filter(activity=activities[0],
                                           student_id=self.user.student_id,
                                           status=Ticket.STATUS_VALID)
@@ -167,7 +176,10 @@ class GetSingleTicketHandler(WeChatHandler):
                         'Url': settings.get_url('u/ticket', {'openid': self.user.open_id, 'ticket': i.unique_id})
                     }
                     return self.reply_single_news(article=article)
-            return self.reply_text('不存在未使用的票')
+                elif len(tickets) == 0:
+                    return self.reply_text('不存在未使用的票')
+                return self.reply_text('查票出错')
+            return self.reply_text('活动查询出错')
         return self.reply_text(self.get_message('bind_account'))
 
 
