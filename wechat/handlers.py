@@ -88,7 +88,8 @@ class GetTicketHandler(WeChatHandler):
     def handle(self):
         articles = []
         if self.user.student_id:
-            available_articles = Ticket.objects.filter(student_id=self.user.student_id)
+            available_articles = Ticket.objects.filter(student_id=self.user.student_id,
+                                                       status=Ticket.STATUS_VALID)
             for i in available_articles:
                 articles.append({
                     'Title': '票：%s' % i.activity.name,
@@ -165,8 +166,8 @@ class GetSingleTicketHandler(WeChatHandler):
             activities = Activity.objects.filter(key=activity_key)
             if len(activities) == 1:
                 tickets = Ticket.objects.filter(activity=activities[0],
-                                          student_id=self.user.student_id,
-                                          status=Ticket.STATUS_VALID)
+                                                student_id=self.user.student_id,
+                                                status=Ticket.STATUS_VALID)
                 if len(tickets) == 1:
                     i = tickets[0]
                     article = {
@@ -190,3 +191,24 @@ class BookEmptyHandler(WeChatHandler):
 
     def handle(self):
         return self.reply_text(self.get_message('book_empty'))
+
+
+class BookMenuHandler(WeChatHandler):
+
+    def check(self):
+        return self.input['EventKey'].startswith(self.view.event_keys['book_header'])
+
+    def handle(self):
+        id_text = self.input['EventKey'][len(self.view.event_keys['book_header']):]
+        activities = Activity.objects.filter(id=id_text)
+        if len(activities) == 1:
+            i = activities[0]
+            article = {
+                'Title': '活动：%s' % i.name,
+                'Description': i.description,
+                'PicUrl': i.pic_url,
+                'Url': settings.get_url('u/activity', {'id': i.id})
+            }
+            return self.reply_single_news(article)
+        return self.reply_text(self.get_message('book_empty'))
+
