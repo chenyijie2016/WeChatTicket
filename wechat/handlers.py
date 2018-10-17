@@ -120,15 +120,15 @@ class BookHandler(WeChatHandler):
                                                            student_id=self.user.student_id,
                                                            status=Ticket.STATUS_VALID)
                         if len(my_tickets) == 0:
-                                result = Activity.objects.filter(key=activity_key).\
-                                    first().update(remain_tickets = remain-1)
-                                if result == 0:
-                                    continue
-                                Ticket.objects.create(unique_id=str(uuid.uuid4()),
-                                                      student_id=self.user.student_id,
-                                                      activity=activities[0],
-                                                      status=Ticket.STATUS_VALID)
-                                return self.reply_text('抢票成功')
+                            result = Activity.objects.filter(key=activity_key, remain_tickets = remain).\
+                                first().update(remain_tickets = remain-1)
+                            if result == 0:
+                                continue
+                            Ticket.objects.create(unique_id=str(uuid.uuid4()),
+                                                  student_id=self.user.student_id,
+                                                  activity=activities[0],
+                                                  status=Ticket.STATUS_VALID)
+                            return self.reply_text('抢票成功')
                         return self.reply_text('已经抢过票了')
                     return self.reply_text('抢票失败')
                 return self.reply_text('活动查询出错')
@@ -143,21 +143,25 @@ class RefundHandler(WeChatHandler):
     def handle(self):
         activity_key = self.input['Content'][3:]
         if self.user.student_id:
-            activities = Activity.objects.filter(key=activity_key)
-            if len(activities) == 1:
-                tickets = Ticket.objects.filter(activity=activities[0],
-                                                student_id=self.user.student_id,
-                                                status=Ticket.STATUS_VALID)
-                if len(tickets) == 1:
-                    tickets[0].status = Ticket.STATUS_CANCELLED
-                    tickets[0].activity.remain_tickets += 1
-                    tickets[0].activity.save()
-                    tickets[0].save()
-                    return self.reply_text('退票成功')
-                elif len(tickets) == 0:
-                    return self.reply_text('不存在未使用的票')
-                return self.reply_text('查票出错')
-            return self.reply_text('活动查询出错')
+            while True:
+                activities = Activity.objects.filter(key=activity_key)
+                if len(activities) == 1:
+                    remain = activities[0].remain_tickets
+                    tickets = Ticket.objects.filter(activity=activities[0],
+                                                    student_id=self.user.student_id,
+                                                    status=Ticket.STATUS_VALID)
+                    if len(tickets) == 1:
+                        result = Activity.objects.filter(key=activity_key, remain_tickets = remain).\
+                                    first().update(remain_tickets = remain+1)
+                        if result == 0:
+                            continue
+                        tickets[0].status = Ticket.STATUS_CANCELLED
+                        tickets[0].save()
+                        return self.reply_text('退票成功')
+                    elif len(tickets) == 0:
+                        return self.reply_text('不存在未使用的票')
+                    return self.reply_text('查票出错')
+                return self.reply_text('活动查询出错')
         return self.reply_text(self.get_message('bind_account'))
 
 
