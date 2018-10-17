@@ -119,8 +119,7 @@ class BookHandler(WeChatHandler):
                                                            student_id=self.user.student_id,
                                                            status=Ticket.STATUS_VALID)
                         if len(my_tickets) == 0:
-                            result = Activity.objects.filter(key=activity_key, remain_tickets = remain).\
-                                first().update(remain_tickets = remain-1)
+                            result = Activity.objects.filter(key=activity_key, remain_tickets = remain).update(remain_tickets = remain-1)
                             if result == 0:
                                 continue
                             Ticket.objects.create(unique_id=str(uuid.uuid4()),
@@ -150,8 +149,7 @@ class RefundHandler(WeChatHandler):
                                                     student_id=self.user.student_id,
                                                     status=Ticket.STATUS_VALID)
                     if len(tickets) == 1:
-                        result = Activity.objects.filter(key=activity_key, remain_tickets = remain).\
-                                    first().update(remain_tickets = remain+1)
+                        result = Activity.objects.filter(key=activity_key, remain_tickets = remain).update(remain_tickets = remain+1)
                         if result == 0:
                             continue
                         tickets[0].status = Ticket.STATUS_CANCELLED
