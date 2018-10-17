@@ -119,15 +119,15 @@ class BookHandler(WeChatHandler):
                                                            student_id=self.user.student_id,
                                                            status=Ticket.STATUS_VALID)
                         if len(my_tickets) == 0:
-                                result = Activity.objects.filter(key=activity_key, remain_tickets = remain).\
-                                    first().update(remain_tickets = remain-1)
-                                if result == 0:
-                                    continue
-                                Ticket.objects.create(unique_id=str(uuid.uuid4()),
-                                                      student_id=self.user.student_id,
-                                                      activity=activities[0],
-                                                      status=Ticket.STATUS_VALID)
-                                return self.reply_text('抢票成功')
+                            result = Activity.objects.filter(key=activity_key, remain_tickets = remain).\
+                                first().update(remain_tickets = remain-1)
+                            if result == 0:
+                                continue
+                            Ticket.objects.create(unique_id=str(uuid.uuid4()),
+                                                  student_id=self.user.student_id,
+                                                  activity=activities[0],
+                                                  status=Ticket.STATUS_VALID)
+                            return self.reply_text('抢票成功')
                         return self.reply_text('已经抢过票了')
                     return self.reply_text('抢票失败')
                 return self.reply_text('活动查询出错')
