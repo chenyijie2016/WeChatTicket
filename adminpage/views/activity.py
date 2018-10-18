@@ -185,8 +185,7 @@ class ActivityMenu(APIView):
             for activity in activity_in:
                 activitys.append({'id': activity.id, 'name': activity.name, 'menuIndex': index})
                 index += 1
-            activity_nin = Activity.objects.exclude(id__in = activity_ids, status = Activity.STATUS_SAVED
-                                                    , book_start__gt=timezone.now(), book_end__lt=timezone.now())
+            activity_nin = Activity.objects.exclude(id__in = activity_ids, status__lt = Activity.STATUS_SAVED)
             for activity in activity_nin:
                 activitys.append({'id': activity.id, 'name': activity.name, 'menuIndex': 0})
             return activitys
