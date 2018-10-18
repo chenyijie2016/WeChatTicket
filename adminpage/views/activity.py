@@ -217,10 +217,14 @@ class ActivityCheckin(APIView):
         current_time = time.time()
         try:
             activity = Activity.objects.get(id=self.input['actId'])
-            if 'ticket' in self.input:
-                ticket = Ticket.objects.get(unique_id=self.input['ticket'])
-            else:
+            # if 'ticket' in self.input:
+            #     ticket = Ticket.objects.get(unique_id=self.input['ticket'])
+            # else:
+            #     ticket = Ticket.objects.get(student_id=self.input['studentId'])
+            if 'studentId' in self.input:
                 ticket = Ticket.objects.get(student_id=self.input['studentId'])
+            else:
+                ticket = Ticket.objects.get(unique_id=self.input['ticket'])
 
         except Exception as e:
             raise DatabaseError("get activity or ticket failed")
@@ -234,8 +238,8 @@ class ActivityCheckin(APIView):
         if ticket.status == Ticket.STATUS_CANCELLED:
             raise LogicError("ticket has been canceled")
 
-        if ticket.activity.id != activity.id:
-            raise LogicError("ticket dosn't match activity")
+        if ticket.activity_id != activity.id:
+            raise LogicError("ticket doesn't match activity")
 
         ticket.status = Ticket.STATUS_USED
         ticket.save()
