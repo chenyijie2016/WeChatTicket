@@ -92,10 +92,11 @@ class GetTicketHandler(WeChatHandler):
             available_articles = Ticket.objects.filter(student_id=self.user.student_id,
                                                        status=Ticket.STATUS_VALID)
             for i in available_articles:
+                activity = Activity.objects.get(id=i.activity_id)
                 articles.append({
-                    'Title': '票：%s' % i.activity.name,
-                    'Description': i.activity.description,
-                    'PicUrl': i.activity.pic_url,
+                    'Title': '票：%s' % activity.name,
+                    'Description': activity.description,
+                    'PicUrl': activity.pic_url,
                     'Url': settings.get_url('u/ticket', {'openid': self.user.open_id, 'ticket': i.unique_id})
                 })
             return self.reply_news(articles=articles)
@@ -116,7 +117,7 @@ class BookHandler(WeChatHandler):
                 if len(activities) == 1:
                     remain = activities[0].remain_tickets
                     if remain > 0:
-                        my_tickets = Ticket.objects.filter(activity=activities[0],
+                        my_tickets = Ticket.objects.filter(activity_id=activities[0].id,
                                                            student_id=self.user.student_id,
                                                            status=Ticket.STATUS_VALID)
                         if len(my_tickets) == 0:
@@ -125,7 +126,7 @@ class BookHandler(WeChatHandler):
                                 continue
                             Ticket.objects.create(unique_id=str(uuid.uuid4()),
                                                   student_id=self.user.student_id,
-                                                  activity=activities[0],
+                                                  activity_id=activities[0].id,
                                                   status=Ticket.STATUS_VALID)
                             return self.reply_text('抢票成功')
                         return self.reply_text('已经抢过票了')
@@ -146,7 +147,7 @@ class RefundHandler(WeChatHandler):
                 activities = Activity.objects.filter(key=activity_key)
                 if len(activities) == 1:
                     remain = activities[0].remain_tickets
-                    tickets = Ticket.objects.filter(activity=activities[0],
+                    tickets = Ticket.objects.filter(activity_id=activities[0].id,
                                                     student_id=self.user.student_id,
                                                     status=Ticket.STATUS_VALID)
                     if len(tickets) == 1:
@@ -173,15 +174,15 @@ class GetSingleTicketHandler(WeChatHandler):
         if self.user.student_id:
             activities = Activity.objects.filter(key=activity_key)
             if len(activities) == 1:
-                tickets = Ticket.objects.filter(activity=activities[0],
-                                                student_id=self.user.student_id,
-                                                status=Ticket.STATUS_VALID)
+                tickets = Ticket.objects.filter(activity_id=activities[0].id,
+                                          student_id=self.user.student_id,
+                                          status=Ticket.STATUS_VALID)
                 if len(tickets) == 1:
                     i = tickets[0]
                     article = {
-                        'Title': '票：%s' % i.activity.name,
-                        'Description': i.activity.description,
-                        'PicUrl': i.activity.pic_url,
+                        'Title': '票：%s' % activities[0].name,
+                        'Description': activities[0].description,
+                        'PicUrl': activities[0].pic_url,
                         'Url': settings.get_url('u/ticket', {'openid': self.user.open_id, 'ticket': i.unique_id})
                     }
                     return self.reply_single_news(article=article)

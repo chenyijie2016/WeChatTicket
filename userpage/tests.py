@@ -2,6 +2,7 @@ from django.test import TestCase, Client
 from wechat.models import User, Activity, Ticket
 import json
 from django.utils import timezone
+from datetime import timedelta
 
 deleted_activity = Activity(id=1, name='deleted', key='key', place='place',
                             description='description', start_time=timezone.now(), pic_url="pic_url",
@@ -14,8 +15,8 @@ saved_activity = Activity(id=2, name='saved', key='key', place='place',
                           total_tickets=100, status=Activity.STATUS_SAVED, remain_tickets=100)
 
 published_activity = Activity(id=3, name='published', key='key', place='place',
-                              description='description', start_time=timezone.now(), pic_url="pic_url",
-                              end_time=timezone.now(), book_start=timezone.now(), book_end=timezone.now(),
+                              description='description', start_time=timezone.now() + timedelta(666), pic_url="pic_url",
+                              end_time=timezone.now() + timedelta(999), book_start=timezone.now() + timedelta(-6), book_end=timezone.now() + timedelta(9),
                               total_tickets=100, status=Activity.STATUS_PUBLISHED, remain_tickets=100)
 
 test_user_openid = '1111'
