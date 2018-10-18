@@ -117,7 +117,7 @@ class BookHandler(WeChatHandler):
                 activities = Activity.objects.filter(key=activity_key)
                 if len(activities) == 1:
                     activities = activities.filter(book_end__gte = timezone.now(),
-                                                           book_start__lte = timezone.now())
+                                                   book_start__lte = timezone.now())
                     if len(activities) == 1:
                         remain = activities[0].remain_tickets
                         if remain > 0:
@@ -189,11 +189,10 @@ class GetSingleTicketHandler(WeChatHandler):
                                                 status=Ticket.STATUS_VALID)
                 if len(tickets) == 1:
                     i = tickets[0]
-                    activity = Activity.objects.get(id=i.activity_id)
                     article = {
-                        'Title': '票：%s' % activity.name,
-                        'Description': activity.description,
-                        'PicUrl': activity.pic_url,
+                        'Title': '票：%s' % activities[0].name,
+                        'Description': activities[0].description,
+                        'PicUrl': activities[0].pic_url,
                         'Url': settings.get_url('u/ticket', {'openid': self.user.open_id, 'ticket': i.unique_id})
                     }
                     return self.reply_single_news(article=article)
