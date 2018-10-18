@@ -70,7 +70,11 @@ class BookWhatHandler(WeChatHandler):
     def handle(self):
         articles = []
         if self.user.student_id:
-            available_articles = Activity.objects.filter(status=Activity.STATUS_PUBLISHED)
+            available_articles = Activity.objects.filter(status=Activity.STATUS_PUBLISHED,
+                                                         book_end__gte=timezone.now(),
+                                                         book_start__lte=timezone.now())
+            if len(available_articles) == 0:
+                return self.reply_text('暂无活动')
             for i in available_articles:
                 articles.append({
                     'Title': '活动：%s' % i.name,
@@ -92,6 +96,8 @@ class GetTicketHandler(WeChatHandler):
         if self.user.student_id:
             available_articles = Ticket.objects.filter(student_id=self.user.student_id,
                                                        status=Ticket.STATUS_VALID)
+            if len(available_articles) == 0:
+                return self.reply_text('暂无可用票')
             for i in available_articles:
                 activity = Activity.objects.get(id=i.activity_id)
                 articles.append({
