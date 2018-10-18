@@ -71,8 +71,6 @@ class BookWhatHandler(WeChatHandler):
     def handle(self):
         articles = []
         if self.user.student_id:
-            if not self.request.user.is_authenticated():
-                raise ValidateError("not login")
             current_menu = CustomWeChatView.lib.get_wechat_menu()
             existed_button = list()
             for btn in current_menu:
