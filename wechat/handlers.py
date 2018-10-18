@@ -70,9 +70,23 @@ class BookWhatHandler(WeChatHandler):
     def handle(self):
         articles = []
         if self.user.student_id:
-            available_articles = Activity.objects.filter(status=Activity.STATUS_PUBLISHED,
-                                                         book_end__gte=timezone.now(),
-                                                         book_start__lte=timezone.now())
+            if not self.request.user.is_authenticated():
+                raise ValidateError("not login")
+            current_menu = CustomWeChatView.lib.get_wechat_menu()
+            existed_button = list()
+            for btn in current_menu:
+                if btn['name'] == '抢票':
+                    existed_button += btn.get('sub_button', list())
+            activity_ids = list()
+            for btn in existed_button:
+                if 'key' in btn:
+                    activity_id = btn['key']
+                    if activity_id.startswith(CustomWeChatView.event_keys['book_header']):
+                        activity_id = activity_id[len(CustomWeChatView.event_keys['book_header'])]
+                    if activity_id and activity_id.isdigit():
+                        activity_ids.append(int(activity_id))
+            available_articles = Activity.objects.filter(id__in=activity_ids, book_start__lt=timezone.now(),
+                                                         book_end__gt=timezone.now(), status=Activity.STATUS_PUBLISHED)
             if len(available_articles) == 0:
                 return self.reply_text('暂无活动')
             for i in available_articles:
@@ -122,8 +136,8 @@ class BookHandler(WeChatHandler):
             while True:
                 activities = Activity.objects.filter(key=activity_key)
                 if len(activities) == 1:
-                    activities = activities.filter(book_end__gte = timezone.now(),
-                                                   book_start__lte = timezone.now())
+                    activities = activities.filter(book_end__gte=timezone.now(),
+                                                   book_start__lte=timezone.now())
                     if len(activities) == 1:
                         remain = activities[0].remain_tickets
                         if remain > 0:
@@ -163,10 +177,11 @@ class RefundHandler(WeChatHandler):
                                                     student_id=self.user.student_id,
                                                     status=Ticket.STATUS_VALID)
                     if len(tickets) == 1:
-                        activities = activities.filter(book_end__gte = timezone.now(),
-                                                               book_start__lte = timezone.now())
+                        activities = activities.filter(book_end__gte=timezone.now(),
+                                                       book_start__lte=timezone.now())
                         if len(activities) == 1:
-                            result = Activity.objects.filter(key=activity_key, remain_tickets = remain).update(remain_tickets = remain+1)
+                            result = Activity.objects.filter(key=activity_key, remain_tickets=remain).update(
+                                remain_tickets=remain + 1)
                             if result == 0:
                                 continue
                             tickets[0].status = Ticket.STATUS_CANCELLED
@@ -225,15 +240,30 @@ class BookMenuHandler(WeChatHandler):
 
     def handle(self):
         id_text = self.input['EventKey'][len(self.view.event_keys['book_header']):]
-        activities = Activity.objects.filter(id=id_text)
-        if len(activities) == 1:
-            i = activities[0]
-            article = {
-                'Title': '活动：%s' % i.name,
-                'Description': i.description,
-                'PicUrl': i.pic_url,
-                'Url': settings.get_url('u/activity', {'id': i.id})
-            }
-            return self.reply_single_news(article)
-        return self.reply_text(self.get_message('book_empty'))
-
+        if self.user.student_id:
+            while True:
+                activities = Activity.objects.filter(id=id_text)
+                if len(activities) == 1:
+                    activities = activities.filter(book_end__gte=timezone.now(),
+                                                   book_start__lte=timezone.now())
+                    if len(activities) == 1:
+                        remain = activities[0].remain_tickets
+                        if remain > 0:
+                            my_tickets = Ticket.objects.filter(activity_id=activities[0].id,
+                                                               student_id=self.user.student_id,
+                                                               status=Ticket.STATUS_VALID)
+                            if len(my_tickets) == 0:
+                                result = Activity.objects.filter(key=activity_key, remain_tickets=remain).update(
+                                    remain_tickets=remain - 1)
+                                if result == 0:
+                                    continue
+                                Ticket.objects.create(unique_id=str(uuid.uuid4()),
+                                                      student_id=self.user.student_id,
+                                                      activity_id=activities[0].id,
+                                                      status=Ticket.STATUS_VALID)
+                                return self.reply_text('抢票成功')
+                            return self.reply_text('已经抢过票了')
+                        return self.reply_text('抢票失败')
+                    return self.reply_text('当前不是抢票时间')
+                return self.reply_text('活动查询出错')
+        return self.reply_text(self.get_message('bind_account'))

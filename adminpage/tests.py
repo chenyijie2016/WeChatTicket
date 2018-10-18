@@ -30,14 +30,15 @@ published_activity = Activity(id=3, name='published', key='key', place='place',
                               end_time=timezone.now(), book_start=timezone.now(), book_end=timezone.now(),
                               total_tickets=100, status=Activity.STATUS_PUBLISHED, remain_tickets=100)
 
-published_activity_dic = {"id": 3, "name": 'published', "key":'key', "place":'place',
-                        "description":'description', "startTime":timezone.now(), "picUrl":"pic_url",
-                         "endTime": timezone.now(), "bookStart":timezone.now(), "bookEnd":timezone.now(),
-                          "totalTickets":100, "status":Activity.STATUS_PUBLISHED, "remainTickets":100}
+published_activity_dic = {"id": 3, "name": 'published', "key": 'key', "place": 'place',
+                          "description": 'description', "startTime": timezone.now(), "picUrl": "pic_url",
+                          "endTime": timezone.now(), "bookStart": timezone.now(), "bookEnd": timezone.now(),
+                          "totalTickets": 100, "status": Activity.STATUS_PUBLISHED, "remainTickets": 100}
 
 
 class GetLoginStatusTest(TestCase):
     "test getting login status"
+
     def setUp(self):
         User.objects.create_superuser(adminForTest['username'],
                                       adminForTest['email'],
@@ -67,6 +68,7 @@ class GetLoginStatusTest(TestCase):
 
 class LoginTest(TestCase):
     "test logging in"
+
     def setUp(self):
         User.objects.create_superuser(adminForTest['username'],
                                       adminForTest['email'],
@@ -107,6 +109,7 @@ class LoginTest(TestCase):
 
 class LogoutTest(TestCase):
     "test logging out"
+
     def setUp(self):
         User.objects.create_superuser(adminForTest['username'],
                                       adminForTest['email'],
@@ -221,6 +224,7 @@ class ImageUploadTest(TestCase):
         with open(pic_root, 'rb') as p:
             c.post('/api/a/image/upload', {'image': p})
 
+
 class ActivityDetailTest(TestCase):
     # TODO:
     # 0.获取活动详情成功
@@ -252,7 +256,8 @@ class ActivityDetailTest(TestCase):
         n = 10
 
         for i in range(n):
-            ticket = Ticket(student_id='Valid_' + str(i), unique_id='Valid_' + str(i), activity_id=published_activity.id,
+            ticket = Ticket(student_id='Valid_' + str(i), unique_id='Valid_' + str(i),
+                            activity_id=published_activity.id,
                             status=Ticket.STATUS_VALID)
             ticket.save()
         for i in range(n):
@@ -260,7 +265,8 @@ class ActivityDetailTest(TestCase):
                             status=Ticket.STATUS_USED)
             ticket.save()
         for i in range(n):
-            ticket = Ticket(student_id='Canceled_' + str(i), unique_id='Canceled_' + str(i), activity_id=published_activity.id,
+            ticket = Ticket(student_id='Canceled_' + str(i), unique_id='Canceled_' + str(i),
+                            activity_id=published_activity.id,
                             status=Ticket.STATUS_CANCELLED)
             ticket.save()
 
@@ -277,11 +283,11 @@ class ActivityDetailTest(TestCase):
                                     key='key',
                                     place='place',
                                     description='description',
-                                    start_time=current_time+delta_3,
+                                    start_time=current_time + delta_3,
                                     pic_url="pic_url",
-                                    end_time=current_time+delta_1+delta_3,
-                                    book_start=current_time-delta_1,
-                                    book_end=current_time+delta_1,
+                                    end_time=current_time + delta_1 + delta_3,
+                                    book_start=current_time - delta_1,
+                                    book_end=current_time + delta_1,
                                     total_tickets=100,
                                     status=Activity.STATUS_PUBLISHED,
                                     remain_tickets=100)
@@ -292,11 +298,11 @@ class ActivityDetailTest(TestCase):
                                key='key',
                                place='place',
                                description='description',
-                               start_time=current_time-delta_1,
+                               start_time=current_time - delta_1,
                                pic_url="pic_url",
-                               end_time=current_time+delta_1,
-                               book_start=current_time-delta_3-delta_1,
-                               book_end=current_time-delta_3,
+                               end_time=current_time + delta_1,
+                               book_start=current_time - delta_3 - delta_1,
+                               book_end=current_time - delta_3,
                                total_tickets=100,
                                status=Activity.STATUS_PUBLISHED,
                                remain_tickets=100)
@@ -307,11 +313,11 @@ class ActivityDetailTest(TestCase):
                              key='key',
                              place='place',
                              description='description',
-                             start_time=current_time-delta_2,
+                             start_time=current_time - delta_2,
                              pic_url="pic_url",
-                             end_time=current_time-delta_1,
-                             book_start=current_time-delta_3-delta_1,
-                             book_end=current_time-delta_3,
+                             end_time=current_time - delta_1,
+                             book_start=current_time - delta_3 - delta_1,
+                             book_end=current_time - delta_3,
                              total_tickets=100,
                              status=Activity.STATUS_PUBLISHED,
                              remain_tickets=100)
@@ -325,7 +331,7 @@ class ActivityDetailTest(TestCase):
         self.assertEqual(response_dict['code'], 0)
 
         for i in range(1, 4):
-            response = c.get('/api/a/activity/detail', {'id':i})
+            response = c.get('/api/a/activity/detail', {'id': i})
             response_str = response.content.decode('utf-8')
             response_dict = json.loads(response_str)
             self.assertEqual(response_dict['code'], 0)
@@ -338,32 +344,32 @@ class ActivityDetailTest(TestCase):
         self.assertEqual(response_dict['code'], 0)
 
         activity = Activity.objects.get(id=self.SavedID)
-        new_name = 'new_'+activity.name
+        new_name = 'new_' + activity.name
         new_place = 'new_' + activity.place
-        new_description = 'new_'+activity.description
+        new_description = 'new_' + activity.description
         new_picUrl = 'new_' + activity.pic_url
         new_status = Activity.STATUS_PUBLISHED
-        response = c.post('/api/a/activity/detail', {'id':self.SavedID,
-                                                     'name':new_name,
-                                                     'place':new_place,
-                                                     'description':new_description,
-                                                     'picUrl':new_picUrl,
-                                                     'startTime':activity.start_time,
-                                                     'endTime':activity.end_time,
-                                                     'bookStart':activity.book_start,
-                                                     'bookEnd':activity.book_end,
-                                                     'totalTickets':activity.total_tickets,
-                                                     'status':new_status})
+        response = c.post('/api/a/activity/detail', {'id': self.SavedID,
+                                                     'name': new_name,
+                                                     'place': new_place,
+                                                     'description': new_description,
+                                                     'picUrl': new_picUrl,
+                                                     'startTime': activity.start_time,
+                                                     'endTime': activity.end_time,
+                                                     'bookStart': activity.book_start,
+                                                     'bookEnd': activity.book_end,
+                                                     'totalTickets': activity.total_tickets,
+                                                     'status': new_status})
         response_str = response.content.decode('utf-8')
         response_dict = json.loads(response_str)
         self.assertEqual(response_dict['code'], 0)
 
         activity = Activity.objects.get(id=self.SavedID)
-        self.assertEqual(activity.name, new_name) # 未发布，可修改名称
-        self.assertEqual(activity.place, new_place) # 未发布，可修改地点
-        self.assertEqual(activity.description, new_description) # 可修改描述
-        self.assertEqual(activity.pic_url, new_picUrl) # 可修改图片url
-        self.assertEqual(activity.status, new_status) # 未发布，可修改状态
+        self.assertEqual(activity.name, new_name)  # 未发布，可修改名称
+        self.assertEqual(activity.place, new_place)  # 未发布，可修改地点
+        self.assertEqual(activity.description, new_description)  # 可修改描述
+        self.assertEqual(activity.pic_url, new_picUrl)  # 可修改图片url
+        self.assertEqual(activity.status, new_status)  # 未发布，可修改状态
 
     def test_change_detail_2(self):
         c = Client()
@@ -373,35 +379,35 @@ class ActivityDetailTest(TestCase):
         self.assertEqual(response_dict['code'], 0)
 
         activity = Activity.objects.get(id=self.PublishedID)
-        new_name = 'new_'+activity.name
+        new_name = 'new_' + activity.name
         new_place = 'new_' + activity.place
-        new_description = 'new_'+activity.description
+        new_description = 'new_' + activity.description
         new_picUrl = 'new_' + activity.pic_url
         new_bookStart = activity.book_start + timezone.timedelta(hours=1)
         new_totalTickets = activity.total_tickets + 50
         new_status = Activity.STATUS_SAVED
-        response = c.post('/api/a/activity/detail', {'id':self.PublishedID,
-                                                     'name':new_name,
-                                                     'place':new_place,
-                                                     'description':new_description,
-                                                     'picUrl':new_picUrl,
-                                                     'startTime':activity.start_time,
-                                                     'endTime':activity.end_time,
-                                                     'bookStart':new_bookStart,
-                                                     'bookEnd':activity.book_end,
-                                                     'totalTickets':new_totalTickets,
-                                                     'status':new_status})
+        response = c.post('/api/a/activity/detail', {'id': self.PublishedID,
+                                                     'name': new_name,
+                                                     'place': new_place,
+                                                     'description': new_description,
+                                                     'picUrl': new_picUrl,
+                                                     'startTime': activity.start_time,
+                                                     'endTime': activity.end_time,
+                                                     'bookStart': new_bookStart,
+                                                     'bookEnd': activity.book_end,
+                                                     'totalTickets': new_totalTickets,
+                                                     'status': new_status})
         response_str = response.content.decode('utf-8')
         response_dict = json.loads(response_str)
         self.assertEqual(response_dict['code'], 0)
 
         activity = Activity.objects.get(id=self.PublishedID)
-        self.assertNotEqual(activity.name, new_name) # 已发布，不能更改名称
-        self.assertNotEqual(activity.place, new_place) # 已发布，不能更改地点
-        self.assertEqual(activity.description, new_description) # 可更改描述
-        self.assertEqual(activity.pic_url, new_picUrl) # 可更改图片url
-        self.assertNotEqual(activity.book_start, new_bookStart) # 已发布，不可更改抢票时间
-        self.assertNotEqual(activity.status, new_status) # 已发布，不可更改状态
+        self.assertNotEqual(activity.name, new_name)  # 已发布，不能更改名称
+        self.assertNotEqual(activity.place, new_place)  # 已发布，不能更改地点
+        self.assertEqual(activity.description, new_description)  # 可更改描述
+        self.assertEqual(activity.pic_url, new_picUrl)  # 可更改图片url
+        self.assertNotEqual(activity.book_start, new_bookStart)  # 已发布，不可更改抢票时间
+        self.assertNotEqual(activity.status, new_status)  # 已发布，不可更改状态
 
     def test_change_detail_3(self):
         c = Client()
@@ -411,9 +417,9 @@ class ActivityDetailTest(TestCase):
         self.assertEqual(response_dict['code'], 0)
 
         activity = Activity.objects.get(id=self.EndedID)
-        new_name = 'new_'+activity.name
+        new_name = 'new_' + activity.name
         new_place = 'new_' + activity.place
-        new_description = 'new_'+activity.description
+        new_description = 'new_' + activity.description
         new_picUrl = 'new_' + activity.pic_url
         new_start = activity.start_time + timezone.timedelta(hours=1)
         new_end = activity.end_time + timezone.timedelta(hours=1)
@@ -421,32 +427,32 @@ class ActivityDetailTest(TestCase):
         new_bookEnd = activity.book_end + timezone.timedelta(hours=1)
         new_totalTicket = activity.total_tickets + 50
         new_status = Activity.STATUS_SAVED
-        response = c.post('/api/a/activity/detail', {'id':self.BookStartID,
-                                                     'name':new_name,
-                                                     'place':new_place,
-                                                     'description':new_description,
-                                                     'picUrl':new_picUrl,
-                                                     'startTime':new_start,
-                                                     'endTime':new_end,
-                                                     'bookStart':new_bookStart,
-                                                     'bookEnd':new_bookEnd,
-                                                     'totalTickets':new_totalTicket,
-                                                     'status':new_status})
+        response = c.post('/api/a/activity/detail', {'id': self.BookStartID,
+                                                     'name': new_name,
+                                                     'place': new_place,
+                                                     'description': new_description,
+                                                     'picUrl': new_picUrl,
+                                                     'startTime': new_start,
+                                                     'endTime': new_end,
+                                                     'bookStart': new_bookStart,
+                                                     'bookEnd': new_bookEnd,
+                                                     'totalTickets': new_totalTicket,
+                                                     'status': new_status})
         response_str = response.content.decode('utf-8')
         response_dict = json.loads(response_str)
         self.assertEqual(response_dict['code'], 0)
 
         activity = Activity.objects.get(id=self.BookStartID)
-        self.assertNotEqual(activity.name, new_name) # 已发布，不可更改名称
-        self.assertNotEqual(activity.place, new_place) # 已发布，不可更改地点
+        self.assertNotEqual(activity.name, new_name)  # 已发布，不可更改名称
+        self.assertNotEqual(activity.place, new_place)  # 已发布，不可更改地点
         self.assertEqual(activity.description, new_description)  # 可更改
-        self.assertEqual(activity.pic_url, new_picUrl) # 可更改
-        self.assertEqual(activity.start_time, new_start) # 活动未结束，可修改
-        self.assertEqual(activity.end_time, new_end) # 活动未结束，可修改
-        self.assertNotEqual(activity.book_start, new_bookStart) # 已发布，不可修改抢票时间
-        self.assertEqual(activity.book_end, new_bookEnd) # 活动未开始，可修改抢票结束时间
-        self.assertNotEqual(activity.total_tickets, new_totalTicket) # 抢票已开始，不可修改总票数
-        self.assertNotEqual(activity.status, new_status) # 活动已发布，不可修改状态
+        self.assertEqual(activity.pic_url, new_picUrl)  # 可更改
+        self.assertEqual(activity.start_time, new_start)  # 活动未结束，可修改
+        self.assertEqual(activity.end_time, new_end)  # 活动未结束，可修改
+        self.assertNotEqual(activity.book_start, new_bookStart)  # 已发布，不可修改抢票时间
+        self.assertEqual(activity.book_end, new_bookEnd)  # 活动未开始，可修改抢票结束时间
+        self.assertNotEqual(activity.total_tickets, new_totalTicket)  # 抢票已开始，不可修改总票数
+        self.assertNotEqual(activity.status, new_status)  # 活动已发布，不可修改状态
 
     def test_change_detail_4(self):
         c = Client()
@@ -456,9 +462,9 @@ class ActivityDetailTest(TestCase):
         self.assertEqual(response_dict['code'], 0)
 
         activity = Activity.objects.get(id=self.EndedID)
-        new_name = 'new_'+activity.name
+        new_name = 'new_' + activity.name
         new_place = 'new_' + activity.place
-        new_description = 'new_'+activity.description
+        new_description = 'new_' + activity.description
         new_picUrl = 'new_' + activity.pic_url
         new_start = activity.start_time + timezone.timedelta(hours=1)
         new_end = activity.end_time + timezone.timedelta(hours=1)
@@ -466,32 +472,32 @@ class ActivityDetailTest(TestCase):
         new_bookEnd = activity.book_end + timezone.timedelta(hours=1)
         new_totalTicket = activity.total_tickets + 50
         new_status = Activity.STATUS_SAVED
-        response = c.post('/api/a/activity/detail', {'id':self.StartedID,
-                                                     'name':new_name,
-                                                     'place':new_place,
-                                                     'description':new_description,
-                                                     'picUrl':new_picUrl,
-                                                     'startTime':new_start,
-                                                     'endTime':new_end,
-                                                     'bookStart':new_bookStart,
-                                                     'bookEnd':new_bookEnd,
-                                                     'totalTickets':new_totalTicket,
-                                                     'status':new_status})
+        response = c.post('/api/a/activity/detail', {'id': self.StartedID,
+                                                     'name': new_name,
+                                                     'place': new_place,
+                                                     'description': new_description,
+                                                     'picUrl': new_picUrl,
+                                                     'startTime': new_start,
+                                                     'endTime': new_end,
+                                                     'bookStart': new_bookStart,
+                                                     'bookEnd': new_bookEnd,
+                                                     'totalTickets': new_totalTicket,
+                                                     'status': new_status})
         response_str = response.content.decode('utf-8')
         response_dict = json.loads(response_str)
         self.assertEqual(response_dict['code'], 0)
 
         activity = Activity.objects.get(id=self.StartedID)
-        self.assertNotEqual(activity.name, new_name) # 活动已发布，不可修改名称
-        self.assertNotEqual(activity.place, new_place) # 活动已发布，不可修改地点
-        self.assertEqual(activity.description, new_description) # 可修改
-        self.assertEqual(activity.pic_url, new_picUrl) # 可修改
-        self.assertEqual(activity.start_time, new_start) # 活动未结束，可修改开始时间
-        self.assertEqual(activity.end_time, new_end) # 活动未结束，可修改结束时间
-        self.assertNotEqual(activity.book_start, new_bookStart) # 已发布，不可修改抢票时间
-        self.assertNotEqual(activity.book_end, new_bookEnd) # 活动已开始，不可修改抢票结束时间
-        self.assertNotEqual(activity.total_tickets, new_totalTicket) # 抢票已开始，不可修改总票数
-        self.assertNotEqual(activity.status, new_status) # 活动已发布，不可修改状态
+        self.assertNotEqual(activity.name, new_name)  # 活动已发布，不可修改名称
+        self.assertNotEqual(activity.place, new_place)  # 活动已发布，不可修改地点
+        self.assertEqual(activity.description, new_description)  # 可修改
+        self.assertEqual(activity.pic_url, new_picUrl)  # 可修改
+        self.assertEqual(activity.start_time, new_start)  # 活动未结束，可修改开始时间
+        self.assertEqual(activity.end_time, new_end)  # 活动未结束，可修改结束时间
+        self.assertNotEqual(activity.book_start, new_bookStart)  # 已发布，不可修改抢票时间
+        self.assertNotEqual(activity.book_end, new_bookEnd)  # 活动已开始，不可修改抢票结束时间
+        self.assertNotEqual(activity.total_tickets, new_totalTicket)  # 抢票已开始，不可修改总票数
+        self.assertNotEqual(activity.status, new_status)  # 活动已发布，不可修改状态
 
     def test_change_detail_5(self):
         c = Client()
@@ -501,9 +507,9 @@ class ActivityDetailTest(TestCase):
         self.assertEqual(response_dict['code'], 0)
 
         activity = Activity.objects.get(id=self.EndedID)
-        new_name = 'new_'+activity.name
+        new_name = 'new_' + activity.name
         new_place = 'new_' + activity.place
-        new_description = 'new_'+activity.description
+        new_description = 'new_' + activity.description
         new_picUrl = 'new_' + activity.pic_url
         new_start = activity.start_time + timezone.timedelta(hours=1)
         new_end = activity.end_time + timezone.timedelta(hours=1)
@@ -511,17 +517,17 @@ class ActivityDetailTest(TestCase):
         new_bookEnd = activity.book_end + timezone.timedelta(hours=1)
         new_totalTicket = activity.total_tickets + 50
         new_status = Activity.STATUS_SAVED
-        response = c.post('/api/a/activity/detail', {'id':self.EndedID,
-                                                     'name':new_name,
-                                                     'place':new_place,
-                                                     'description':new_description,
-                                                     'picUrl':new_picUrl,
-                                                     'startTime':new_start,
-                                                     'endTime':new_end,
-                                                     'bookStart':new_bookStart,
-                                                     'bookEnd':new_bookEnd,
-                                                     'totalTickets':new_totalTicket,
-                                                     'status':new_status})
+        response = c.post('/api/a/activity/detail', {'id': self.EndedID,
+                                                     'name': new_name,
+                                                     'place': new_place,
+                                                     'description': new_description,
+                                                     'picUrl': new_picUrl,
+                                                     'startTime': new_start,
+                                                     'endTime': new_end,
+                                                     'bookStart': new_bookStart,
+                                                     'bookEnd': new_bookEnd,
+                                                     'totalTickets': new_totalTicket,
+                                                     'status': new_status})
         response_str = response.content.decode('utf-8')
         response_dict = json.loads(response_str)
         self.assertEqual(response_dict['code'], 0)
@@ -531,8 +537,8 @@ class ActivityDetailTest(TestCase):
         self.assertNotEqual(activity.place, new_place)
         self.assertEqual(activity.description, new_description)
         self.assertEqual(activity.pic_url, new_picUrl)
-        self.assertNotEqual(activity.start_time, new_start) # 活动已结束，不可修改开始时间
-        self.assertNotEqual(activity.end_time, new_end) # 活动已结束，不可修改结束时间
+        self.assertNotEqual(activity.start_time, new_start)  # 活动已结束，不可修改开始时间
+        self.assertNotEqual(activity.end_time, new_end)  # 活动已结束，不可修改结束时间
         self.assertNotEqual(activity.book_start, new_bookStart)
         self.assertNotEqual(activity.book_end, new_bookEnd)
         self.assertNotEqual(activity.total_tickets, new_totalTicket)
@@ -599,7 +605,6 @@ class ActivityDetailTest(TestCase):
 #             self.assertEqual(response_dict['data'][i]['menuIndex'], 0)
 
 
-
 class TicketCheckInTest(TestCase):
     # TODO:
     # 1.提交ticket_id并检票成功
@@ -634,18 +639,18 @@ class TicketCheckInTest(TestCase):
 
         valid_activity = Activity(id=self.ValidID, name='published', key='key', place='place',
                                   description='description',
-                                  start_time=current_time-delta_1,
+                                  start_time=current_time - delta_1,
                                   pic_url="pic_url",
-                                  end_time=current_time+delta_1,
+                                  end_time=current_time + delta_1,
                                   book_start=timezone.now(),
                                   book_end=timezone.now(),
                                   total_tickets=100, status=Activity.STATUS_PUBLISHED, remain_tickets=100)
 
         ended_activity = Activity(id=self.EndedID, name='published', key='key', place='place',
                                   description='description',
-                                  start_time=current_time-delta_2,
+                                  start_time=current_time - delta_2,
                                   pic_url="pic_url",
-                                  end_time=current_time-delta_1,
+                                  end_time=current_time - delta_1,
                                   book_start=timezone.now(), book_end=timezone.now(),
                                   total_tickets=100, status=Activity.STATUS_PUBLISHED, remain_tickets=100)
 

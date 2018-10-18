@@ -8,8 +8,6 @@ from adminpage.views.activity import *
 
 __author__ = "Zhou Zhanping"
 
-
-
 urlpatterns = [
     url(r'^login/?$', AdminLogin.as_view()),
     url(r'^logout/?$', AdminLogout.as_view()),

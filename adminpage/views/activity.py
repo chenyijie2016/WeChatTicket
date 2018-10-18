@@ -12,7 +12,6 @@ import os
 import time
 
 
-
 class ActivityList(APIView):
 
     def get(self):
@@ -20,7 +19,7 @@ class ActivityList(APIView):
         if not self.request.user.is_authenticated():
             raise ValidateError(self.input)
 
-        activity_set = Activity.objects.exclude(status = Activity.STATUS_DELETED)
+        activity_set = Activity.objects.exclude(status=Activity.STATUS_DELETED)
         activity_list = []
         for activity in activity_set:
             activity_serial = activitySerializer(activity)
@@ -53,18 +52,18 @@ class ActivityCreate(APIView):
                          'endTime', 'bookStart', 'bookEnd', 'totalTickets', 'status')
         try:
             print(self.input['bookStart'])
-            Activity.objects.create(name = self.input['name'],
-                                    key = self.input['key'],
-                                    place = self.input['place'],
-                                    description = self.input['description'],
-                                    start_time = self.input['startTime'],
-                                    pic_url = self.input['picUrl'],
-                                    end_time = self.input['endTime'],
-                                    book_start = self.input['bookStart'],
-                                    book_end = self.input['bookEnd'],
-                                    total_tickets = self.input['totalTickets'],
-                                    status = self.input['status'],
-                                    remain_tickets = self.input['totalTickets'])
+            Activity.objects.create(name=self.input['name'],
+                                    key=self.input['key'],
+                                    place=self.input['place'],
+                                    description=self.input['description'],
+                                    start_time=self.input['startTime'],
+                                    pic_url=self.input['picUrl'],
+                                    end_time=self.input['endTime'],
+                                    book_start=self.input['bookStart'],
+                                    book_end=self.input['bookEnd'],
+                                    total_tickets=self.input['totalTickets'],
+                                    status=self.input['status'],
+                                    remain_tickets=self.input['totalTickets'])
         except Exception as e:
             raise DatabaseError(self.input)
 
@@ -91,14 +90,12 @@ class ImageUpload(APIView):
 
 class ActivityDetail(APIView):
 
-
-
     def get(self):
         if not self.request.user.is_authenticated():
             raise ValidateError("not login")
 
         try:
-            activity = Activity.objects.get(id = self.input['id'])
+            activity = Activity.objects.get(id=self.input['id'])
             activity_detail = {}
             activity_detail['name'] = activity.name
             activity_detail['key'] = activity.key
@@ -111,7 +108,8 @@ class ActivityDetail(APIView):
             activity_detail['totalTickets'] = activity.total_tickets
             activity_detail['picUrl'] = activity.pic_url
             activity_detail['bookedTickets'] = activity.total_tickets - activity.remain_tickets
-            activity_detail['usedTickets'] = Ticket.objects.filter(activity_id=activity.id, status=Ticket.STATUS_USED).count()
+            activity_detail['usedTickets'] = Ticket.objects.filter(activity_id=activity.id,
+                                                                   status=Ticket.STATUS_USED).count()
             activity_detail['currentTime'] = time.time()
             activity_detail['status'] = activity.status
 
@@ -128,7 +126,7 @@ class ActivityDetail(APIView):
                          'totalTickets', 'status')
 
         try:
-            activity = Activity.objects.get(id = self.input['id'])
+            activity = Activity.objects.get(id=self.input['id'])
             activity_status = activity.status
             current_time = time.time()
 
@@ -179,13 +177,13 @@ class ActivityMenu(APIView):
                     if activity_id and activity_id.isdigit():
                         activity_ids.append(int(activity_id))
             activitys = []
-            activity_in = Activity.objects.filter(id__in = activity_ids, book_start__lt=timezone.now()
+            activity_in = Activity.objects.filter(id__in=activity_ids, book_start__lt=timezone.now()
                                                   , book_end__gt=timezone.now(), status=Activity.STATUS_PUBLISHED)
             index = 1
             for activity in activity_in:
                 activitys.append({'id': activity.id, 'name': activity.name, 'menuIndex': index})
                 index += 1
-            activity_nin = Activity.objects.exclude(id__in = activity_ids, status__lt = Activity.STATUS_SAVED)
+            activity_nin = Activity.objects.exclude(id__in=activity_ids, status__lt=Activity.STATUS_SAVED)
             for activity in activity_nin:
                 activitys.append({'id': activity.id, 'name': activity.name, 'menuIndex': 0})
             return activitys
@@ -217,10 +215,6 @@ class ActivityCheckin(APIView):
         current_time = time.time()
         try:
             activity = Activity.objects.get(id=self.input['actId'])
-            # if 'ticket' in self.input:
-            #     ticket = Ticket.objects.get(unique_id=self.input['ticket'])
-            # else:
-            #     ticket = Ticket.objects.get(student_id=self.input['studentId'])
             if 'studentId' in self.input:
                 ticket = Ticket.objects.get(student_id=self.input['studentId'])
             else:

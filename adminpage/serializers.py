@@ -2,7 +2,6 @@ import time
 
 
 def activitySerializer(activity):
-
     encoded = {}
     encoded['id'] = activity.id
     encoded['name'] = activity.name

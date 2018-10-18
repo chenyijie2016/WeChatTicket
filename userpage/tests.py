@@ -16,7 +16,8 @@ saved_activity = Activity(id=2, name='saved', key='key', place='place',
 
 published_activity = Activity(id=3, name='published', key='key', place='place',
                               description='description', start_time=timezone.now() + timedelta(666), pic_url="pic_url",
-                              end_time=timezone.now() + timedelta(999), book_start=timezone.now() + timedelta(-6), book_end=timezone.now() + timedelta(9),
+                              end_time=timezone.now() + timedelta(999), book_start=timezone.now() + timedelta(-6),
+                              book_end=timezone.now() + timedelta(9),
                               total_tickets=100, status=Activity.STATUS_PUBLISHED, remain_tickets=100)
 
 test_user_openid = '1111'
@@ -24,10 +25,12 @@ test_student_id = 2016018485
 
 ticket_unique_id = 'fff'
 
+
 class UserBindTestCase(TestCase):
     """
     Test user bind
     """
+
     def setUp(self):
         # if you visit in wechat, will do the following things
         User.objects.get_or_create(open_id=test_user_openid)
@@ -42,7 +45,8 @@ class UserBindTestCase(TestCase):
         response_dict = json.loads(response_str)
         self.assertEqual(response_dict['data'], '')
 
-        response = c.post('/api/u/user/bind', {'openid': test_user_openid, 'student_id': test_student_id, 'password': 'hhh'})
+        response = c.post('/api/u/user/bind',
+                          {'openid': test_user_openid, 'student_id': test_student_id, 'password': 'hhh'})
         response_str = response.content.decode('utf-8')
         response_dict = json.loads(response_str)
         self.assertEqual(response_dict['code'], 0)
@@ -57,6 +61,7 @@ class ActivityGetTestCase(TestCase):
     """
     Test activity get
     """
+
     def setUp(self):
         deleted_activity.save()
         saved_activity.save()
@@ -99,10 +104,12 @@ class TicketGetTestCase(TestCase):
     """
     Test activity get
     """
+
     def setUp(self):
         User.objects.get_or_create(open_id=test_user_openid)
         published_activity.save()
-        ticket_test = Ticket(student_id=test_student_id, unique_id=ticket_unique_id, activity_id=published_activity.id, status=Ticket.STATUS_VALID)
+        ticket_test = Ticket(student_id=test_student_id, unique_id=ticket_unique_id, activity_id=published_activity.id,
+                             status=Ticket.STATUS_VALID)
         ticket_test.save()
 
     def tearDown(self):
