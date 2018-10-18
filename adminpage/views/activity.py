@@ -111,7 +111,7 @@ class ActivityDetail(APIView):
             activity_detail['totalTickets'] = activity.total_tickets
             activity_detail['picUrl'] = activity.pic_url
             activity_detail['bookedTickets'] = activity.total_tickets - activity.remain_tickets
-            activity_detail['usedTickets'] = Ticket.objects.filter(activity=activity, status=Ticket.STATUS_USED).count()
+            activity_detail['usedTickets'] = Ticket.objects.filter(activity_id=activity.id, status=Ticket.STATUS_USED).count()
             activity_detail['currentTime'] = time.time()
             activity_detail['status'] = activity.status
 
