@@ -101,7 +101,7 @@ class TicketGetTestCase(TestCase):
     def setUp(self):
         User.objects.get_or_create(open_id=test_user_openid)
         published_activity.save()
-        ticket_test = Ticket(student_id=test_student_id, unique_id=ticket_unique_id, activity=published_activity, status=Ticket.STATUS_VALID)
+        ticket_test = Ticket(student_id=test_student_id, unique_id=ticket_unique_id, activity_id=published_activity.id, status=Ticket.STATUS_VALID)
         ticket_test.save()
 
     def tearDown(self):
