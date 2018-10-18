@@ -184,15 +184,16 @@ class GetSingleTicketHandler(WeChatHandler):
         if self.user.student_id:
             activities = Activity.objects.filter(key=activity_key)
             if len(activities) == 1:
-                tickets = Ticket.objects.filter(activity=activities[0],
+                tickets = Ticket.objects.filter(activity_id=activities[0].id,
                                                 student_id=self.user.student_id,
                                                 status=Ticket.STATUS_VALID)
                 if len(tickets) == 1:
                     i = tickets[0]
+                    activity = Activity.objects.get(id=i.activity_id)
                     article = {
-                        'Title': '票：%s' % i.activity.name,
-                        'Description': i.activity.description,
-                        'PicUrl': i.activity.pic_url,
+                        'Title': '票：%s' % activity.name,
+                        'Description': activity.description,
+                        'PicUrl': activity.pic_url,
                         'Url': settings.get_url('u/ticket', {'openid': self.user.open_id, 'ticket': i.unique_id})
                     }
                     return self.reply_single_news(article=article)
