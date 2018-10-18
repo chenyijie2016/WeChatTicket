@@ -252,15 +252,15 @@ class ActivityDetailTest(TestCase):
         n = 10
 
         for i in range(n):
-            ticket = Ticket(student_id='Valid_' + str(i), unique_id='Valid_' + str(i), activity=published_activity,
+            ticket = Ticket(student_id='Valid_' + str(i), unique_id='Valid_' + str(i), activity_id=published_activity.id,
                             status=Ticket.STATUS_VALID)
             ticket.save()
         for i in range(n):
-            ticket = Ticket(student_id='Used_' + str(i), unique_id='Used_' + str(i), activity=published_activity,
+            ticket = Ticket(student_id='Used_' + str(i), unique_id='Used_' + str(i), activity_id=published_activity.id,
                             status=Ticket.STATUS_USED)
             ticket.save()
         for i in range(n):
-            ticket = Ticket(student_id='Canceled_' + str(i), unique_id='Canceled_' + str(i), activity=published_activity,
+            ticket = Ticket(student_id='Canceled_' + str(i), unique_id='Canceled_' + str(i), activity_id=published_activity.id,
                             status=Ticket.STATUS_CANCELLED)
             ticket.save()
 
@@ -658,14 +658,14 @@ class TicketCheckInTest(TestCase):
                                   book_end=timezone.now(),
                                   total_tickets=100, status=Activity.STATUS_PUBLISHED, remain_tickets=100)
 
-        valid_ticket = Ticket(student_id='valid_student_id', unique_id='valid_unique_id', activity=valid_activity,
+        valid_ticket = Ticket(student_id='valid_student_id', unique_id='valid_unique_id', activity_id=valid_activity.id,
                               status=Ticket.STATUS_VALID)
-        used_ticket = Ticket(student_id='used_student_id', unique_id='used_unique_id', activity=valid_activity,
+        used_ticket = Ticket(student_id='used_student_id', unique_id='used_unique_id', activity_id=valid_activity.id,
                              status=Ticket.STATUS_USED)
         canceled_ticket = Ticket(student_id='canceled_student_id', unique_id='canceled_unique_id',
-                                 activity=valid_activity, status=Ticket.STATUS_CANCELLED)
+                                 activity_id=valid_activity.id, status=Ticket.STATUS_CANCELLED)
         ended_ticket = Ticket(student_id='ended_student_id', unique_id='ended_unique_id',
-                              activity=ended_activity, status=Ticket.STATUS_VALID)
+                              activity_id=ended_activity.id, status=Ticket.STATUS_VALID)
 
         valid_activity.save()
         ended_activity.save()
