@@ -253,7 +253,7 @@ class BookMenuHandler(WeChatHandler):
                                                                student_id=self.user.student_id,
                                                                status=Ticket.STATUS_VALID)
                             if len(my_tickets) == 0:
-                                result = Activity.objects.filter(key=activity_key, remain_tickets=remain).update(
+                                result = Activity.objects.filter(id=id_text, remain_tickets=remain).update(
                                     remain_tickets=remain - 1)
                                 if result == 0:
                                     continue
