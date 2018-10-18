@@ -116,7 +116,7 @@ class BookHandler(WeChatHandler):
             while True:
                 activities = Activity.objects.filter(key=activity_key)
                 if len(activities) == 1:
-                    activities = activities.objects.filter(book_end__gte = timezone.now(),
+                    activities = activities.filter(book_end__gte = timezone.now(),
                                                            book_start__lte = timezone.now())
                     if len(activities) == 1:
                         remain = activities[0].remain_tickets
@@ -157,7 +157,7 @@ class RefundHandler(WeChatHandler):
                                                     student_id=self.user.student_id,
                                                     status=Ticket.STATUS_VALID)
                     if len(tickets) == 1:
-                        activities = activities.objects.filter(book_end__gte = timezone.now(),
+                        activities = activities.filter(book_end__gte = timezone.now(),
                                                                book_start__lte = timezone.now())
                         if len(activities) == 1:
                             result = Activity.objects.filter(key=activity_key, remain_tickets = remain).update(remain_tickets = remain+1)
