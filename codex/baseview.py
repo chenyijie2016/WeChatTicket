@@ -8,12 +8,10 @@ from django.views.generic import View
 
 from codex.baseerror import BaseError, InputError
 
-
 __author__ = "Epsirom"
 
 
 class BaseView(View):
-
     logger = logging.getLogger('View')
 
     def dispatch(self, request, *args, **kwargs):
@@ -28,7 +26,6 @@ class BaseView(View):
 
 
 class APIView(BaseView):
-
     logger = logging.getLogger('API')
 
     def do_dispatch(self, *args, **kwargs):
@@ -86,4 +83,4 @@ class APIView(BaseView):
     def check_input(self, *keys):
         for k in keys:
             if k not in self.input:
-                raise InputError('Field "%s" required' % (k, ))
+                raise InputError('Field "%s" required' % (k,))
