@@ -5,6 +5,7 @@ from wechat.wrapper import WeChatHandler
 from wechat.models import Activity, Ticket
 import uuid
 from django.db import transaction
+from django.utils import timezone
 
 __author__ = "Epsirom"
 
@@ -115,22 +116,27 @@ class BookHandler(WeChatHandler):
             while True:
                 activities = Activity.objects.filter(key=activity_key)
                 if len(activities) == 1:
-                    remain = activities[0].remain_tickets
-                    if remain > 0:
-                        my_tickets = Ticket.objects.filter(activity_id=activities[0].id,
-                                                           student_id=self.user.student_id,
-                                                           status=Ticket.STATUS_VALID)
-                        if len(my_tickets) == 0:
-                            result = Activity.objects.filter(key=activity_key, remain_tickets = remain).update(remain_tickets = remain-1)
-                            if result == 0:
-                                continue
-                            Ticket.objects.create(unique_id=str(uuid.uuid4()),
-                                                  student_id=self.user.student_id,
-                                                  activity_id=activities[0].id,
-                                                  status=Ticket.STATUS_VALID)
-                            return self.reply_text('抢票成功')
-                        return self.reply_text('已经抢过票了')
-                    return self.reply_text('抢票失败')
+                    activities = activities.filter(book_end__gte = timezone.now(),
+                                                   book_start__lte = timezone.now())
+                    if len(activities) == 1:
+                        remain = activities[0].remain_tickets
+                        if remain > 0:
+                            my_tickets = Ticket.objects.filter(activity_id=activities[0].id,
+                                                               student_id=self.user.student_id,
+                                                               status=Ticket.STATUS_VALID)
+                            if len(my_tickets) == 0:
+                                result = Activity.objects.filter(key=activity_key, remain_tickets=remain).update(
+                                    remain_tickets=remain - 1)
+                                if result == 0:
+                                    continue
+                                Ticket.objects.create(unique_id=str(uuid.uuid4()),
+                                                      student_id=self.user.student_id,
+                                                      activity_id=activities[0].id,
+                                                      status=Ticket.STATUS_VALID)
+                                return self.reply_text('抢票成功')
+                            return self.reply_text('已经抢过票了')
+                        return self.reply_text('抢票失败')
+                    return self.reply_text('当前不是抢票时间')
                 return self.reply_text('活动查询出错')
         return self.reply_text(self.get_message('bind_account'))
 
@@ -151,12 +157,16 @@ class RefundHandler(WeChatHandler):
                                                     student_id=self.user.student_id,
                                                     status=Ticket.STATUS_VALID)
                     if len(tickets) == 1:
-                        result = Activity.objects.filter(key=activity_key, remain_tickets = remain).update(remain_tickets = remain+1)
-                        if result == 0:
-                            continue
-                        tickets[0].status = Ticket.STATUS_CANCELLED
-                        tickets[0].save()
-                        return self.reply_text('退票成功')
+                        activities = activities.filter(book_end__gte = timezone.now(),
+                                                               book_start__lte = timezone.now())
+                        if len(activities) == 1:
+                            result = Activity.objects.filter(key=activity_key, remain_tickets = remain).update(remain_tickets = remain+1)
+                            if result == 0:
+                                continue
+                            tickets[0].status = Ticket.STATUS_CANCELLED
+                            tickets[0].save()
+                            return self.reply_text('退票成功')
+                        return self.reply_text('退票失败，只在可以抢票的时间允许退票')
                     elif len(tickets) == 0:
                         return self.reply_text('不存在未使用的票')
                     return self.reply_text('查票出错')
@@ -175,8 +185,8 @@ class GetSingleTicketHandler(WeChatHandler):
             activities = Activity.objects.filter(key=activity_key)
             if len(activities) == 1:
                 tickets = Ticket.objects.filter(activity_id=activities[0].id,
-                                          student_id=self.user.student_id,
-                                          status=Ticket.STATUS_VALID)
+                                                student_id=self.user.student_id,
+                                                status=Ticket.STATUS_VALID)
                 if len(tickets) == 1:
                     i = tickets[0]
                     article = {

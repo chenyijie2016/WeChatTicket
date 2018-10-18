@@ -24,12 +24,12 @@ reply_data = '<![CDATA[%s]]>'
 
 published_activity = Activity(id=3, name='published', key='key', place='place',
                               description='description', start_time=timezone.now() + timedelta(666), pic_url="pic_url",
-                              end_time=timezone.now() + timedelta(999), book_start=timezone.now() + timedelta(-6), book_end=timezone.now() + timedelta(9),
+                              end_time=timezone.now() + timedelta(999), book_start=timezone.now() + timedelta(-6), book_end=timezone.now() + timedelta(90),
                               total_tickets=1, status=Activity.STATUS_PUBLISHED, remain_tickets=1)
 
 published_activity2 = Activity(id=1, name='published2', key='key2', place='place',
                               description='description', start_time=timezone.now() + timedelta(666), pic_url="pic_url",
-                              end_time=timezone.now() + timedelta(999), book_start=timezone.now() + timedelta(-6), book_end=timezone.now() + timedelta(9),
+                              end_time=timezone.now() + timedelta(999), book_start=timezone.now() + timedelta(-6), book_end=timezone.now() + timedelta(90),
                                total_tickets=1000, status=Activity.STATUS_PUBLISHED, remain_tickets=1000)
 
 class TicketOperationTestCase(TestCase):
