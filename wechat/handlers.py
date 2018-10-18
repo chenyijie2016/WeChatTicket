@@ -6,6 +6,7 @@ from wechat.models import Activity, Ticket
 import uuid
 from django.db import transaction
 from django.utils import timezone
+from wechat.views import CustomWeChatView
 
 __author__ = "Epsirom"
 
