@@ -52,8 +52,8 @@ class TicketOperationTestCase(TestCase):
     def tearDown(self):
         for i in range(len(test_user_openid)):
             User.objects.get(open_id=test_user_openid[i]).delete()
-        Activity.objects.get(id=3).delete()
-        Activity.objects.get(id=1).delete()
+        # Activity.objects.get(id=3).delete()
+        # Activity.objects.get(id=1).delete()
 
     def test_ticket(self):
         def test_get(send_data, result, start_with=False):
