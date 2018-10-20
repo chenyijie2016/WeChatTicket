@@ -1,12 +1,11 @@
 # -*- coding: utf-8 -*-
 
 from WeChatTicket import settings
-from wechat.wrapper import WeChatHandler, WeChatView, WeChatLib
-from wechat.models import Activity, Ticket
+from wechat.wrapper import WeChatHandler, WeChatView
+from wechat.models import Activity, Ticket, MenuIdList
 import uuid
 from django.db import transaction
 from django.utils import timezone
-from WeChatTicket.settings import WECHAT_TOKEN, WECHAT_APPID, WECHAT_SECRET
 
 __author__ = "Epsirom"
 
@@ -71,19 +70,7 @@ class BookWhatHandler(WeChatHandler):
     def handle(self):
         articles = []
         if self.user.student_id:
-            current_menu = WeChatLib(WECHAT_TOKEN, WECHAT_APPID, WECHAT_SECRET).get_wechat_menu()
-            existed_button = list()
-            for btn in current_menu:
-                if btn['name'] == '抢票':
-                    existed_button += btn.get('sub_button', list())
-            activity_ids = list()
-            for btn in existed_button:
-                if 'key' in btn:
-                    activity_id = btn['key']
-                    if activity_id.startswith('BOOKING_ACTIVITY_'):
-                        activity_id = activity_id[len('BOOKING_ACTIVITY_')]
-                    if activity_id and activity_id.isdigit():
-                        activity_ids.append(int(activity_id))
+            activity_ids = MenuIdList.get_menu()
             available_articles = Activity.objects.filter(id__in=activity_ids, book_start__lt=timezone.now(),
                                                          book_end__gt=timezone.now(), status=Activity.STATUS_PUBLISHED)
             if len(available_articles) == 0:

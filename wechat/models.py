@@ -1,6 +1,7 @@
 from django.db import models
 
 from codex.baseerror import LogicError
+from WeChatTicket.settings import WECHAT_TOKEN, WECHAT_APPID, WECHAT_SECRET
 
 
 class User(models.Model):
@@ -60,3 +61,36 @@ class Ticket(models.Model):
             return cls.objects.filter(student_id=User.get_by_openid(openid).student_id).get(unique_id=ticket)
         except cls.DoesNotExist:
             raise LogicError('Ticket owned by the owner not found')
+
+
+class MenuIdList():
+    updated = False
+    menus = []
+
+    @classmethod
+    def get_menu(cls):
+        from wechat.wrapper import WeChatLib
+        if cls.updated:
+            return cls.menus
+        current_menu = WeChatLib(WECHAT_TOKEN, WECHAT_APPID, WECHAT_SECRET).get_wechat_menu()
+        existed_button = list()
+        for btn in current_menu:
+            if btn['name'] == '抢票':
+                existed_button += btn.get('sub_button', list())
+        activity_ids = list()
+        for btn in existed_button:
+            if 'key' in btn:
+                activity_id = btn['key']
+                if activity_id.startswith('BOOKING_ACTIVITY_'):
+                    activity_id = activity_id[len('BOOKING_ACTIVITY_')]
+                if activity_id and activity_id.isdigit():
+                    activity_ids.append(int(activity_id))
+        cls.menus = activity_ids
+        cls.updated = True
+        return cls.menus
+
+    @classmethod
+    def set_menu(cls, new_menu):
+        cls.updated = False
+        cls.menus = new_menu
+        cls.updated = True
