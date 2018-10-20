@@ -1,7 +1,7 @@
 from codex.baseerror import *
 from codex.baseview import APIView
 
-from wechat.models import Activity, Ticket
+from wechat.models import Activity, Ticket, MenuIdList
 from adminpage.serializers import activitySerializer
 
 from django.conf import settings
@@ -177,8 +177,8 @@ class ActivityMenu(APIView):
                     if activity_id and activity_id.isdigit():
                         activity_ids.append(int(activity_id))
             activitys = []
-            activity_in = Activity.objects.filter(id__in=activity_ids, book_start__lt=timezone.now()
-                                                  , book_end__gt=timezone.now(), status=Activity.STATUS_PUBLISHED)
+            activity_in = Activity.objects.filter(id__in=activity_ids, book_start__lt=timezone.now(),
+                                                  book_end__gt=timezone.now(), status=Activity.STATUS_PUBLISHED)
             index = 1
             for activity in activity_in:
                 activitys.append({'id': activity.id, 'name': activity.name, 'menuIndex': index})
@@ -197,6 +197,7 @@ class ActivityMenu(APIView):
 
         try:
             activity_id_list = self.input
+            MenuIdList.set_menu(activity_id_list)
             activity_list = []
             for id in activity_id_list:
                 activity = Activity.objects.get(id=id)
