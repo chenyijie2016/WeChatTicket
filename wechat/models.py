@@ -66,11 +66,15 @@ class Ticket(models.Model):
 class MenuIdList():
     updated = False
     menus = []
+    set_menu_lock = False
 
     @classmethod
     def get_menu(cls):
         from wechat.wrapper import WeChatLib
+        if cls.set_menu_lock:
+            return 'Lock'
         if cls.updated:
+            print ('Cached!')
             return cls.menus
         current_menu = WeChatLib(WECHAT_TOKEN, WECHAT_APPID, WECHAT_SECRET).get_wechat_menu()
         existed_button = list()
@@ -91,6 +95,9 @@ class MenuIdList():
 
     @classmethod
     def set_menu(cls, new_menu):
-        cls.updated = False
+        cls.set_menu_lock = True
         cls.menus = new_menu
         cls.updated = True
+        print("Updated!")
+        print(cls.menus)
+        cls.set_menu_lock = False
