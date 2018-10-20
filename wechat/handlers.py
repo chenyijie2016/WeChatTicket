@@ -71,6 +71,8 @@ class BookWhatHandler(WeChatHandler):
         articles = []
         if self.user.student_id:
             activity_ids = MenuIdList.get_menu()
+            if activity_ids == 'Lock':
+                return self.reply_text('管理员正在更新，请稍后再试')
             available_articles = Activity.objects.filter(id__in=activity_ids, book_start__lt=timezone.now(),
                                                          book_end__gt=timezone.now(), status=Activity.STATUS_PUBLISHED)
             if len(available_articles) == 0:

@@ -52,18 +52,19 @@ class ActivityCreate(APIView):
                          'endTime', 'bookStart', 'bookEnd', 'totalTickets', 'status')
         try:
             print(self.input['bookStart'])
-            Activity.objects.create(name=self.input['name'],
-                                    key=self.input['key'],
-                                    place=self.input['place'],
-                                    description=self.input['description'],
-                                    start_time=self.input['startTime'],
-                                    pic_url=self.input['picUrl'],
-                                    end_time=self.input['endTime'],
-                                    book_start=self.input['bookStart'],
-                                    book_end=self.input['bookEnd'],
-                                    total_tickets=self.input['totalTickets'],
-                                    status=self.input['status'],
-                                    remain_tickets=self.input['totalTickets'])
+            activity = Activity.objects.create( name=self.input['name'],
+                                                key=self.input['key'],
+                                                place=self.input['place'],
+                                                description=self.input['description'],
+                                                start_time=self.input['startTime'],
+                                                pic_url=self.input['picUrl'],
+                                                end_time=self.input['endTime'],
+                                                book_start=self.input['bookStart'],
+                                                book_end=self.input['bookEnd'],
+                                                total_tickets=self.input['totalTickets'],
+                                                status=self.input['status'],
+                                                remain_tickets=self.input['totalTickets'])
+            return activity.id
         except Exception as e:
             raise DatabaseError(self.input)
 
